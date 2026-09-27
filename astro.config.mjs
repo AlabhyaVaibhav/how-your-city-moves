@@ -13,7 +13,7 @@ const supabase = origin(env.PUBLIC_SUPABASE_URL);
 const connect = ["'self'", plausible, posthog, supabase].filter(Boolean).join(" ");
 
 export default defineConfig({
-  site: env.PUBLIC_SITE_URL || "https://how-bangalore-moves.vercel.app",
+  site: env.PUBLIC_SITE_URL || "https://how-your-city-moves.vercel.app",
   base: env.BASE_PATH || "/",
   trailingSlash: "ignore",
   build: { format: "directory" },
