@@ -1,0 +1,45 @@
+/* Everything this site keeps in the browser. Keys are unchanged from the prototype so existing data carries over. */
+import { isAreaId, type Person } from "../app/data";
+
+export const KEYS = {
+  people: "blr-moves-v2",
+  names: "blr-moves-names",
+  /** Random ID used only to let you delete what you shared to the city-wide stats. */
+  contrib: "blr-moves-contrib",
+} as const;
+
+function get(key: string): string | null {
+  try { return localStorage.getItem(key); } catch { return null; }
+}
+function set(key: string, v: string) {
+  try { localStorage.setItem(key, v); } catch { /* private mode / storage full: the app still works */ }
+}
+
+export function loadPeople(): Person[] | null {
+  try {
+    const s: unknown = JSON.parse(get(KEYS.people) ?? "null");
+    if (!Array.isArray(s)) return null;
+    const ok = s.filter((p): p is Person => !!p && typeof p === "object" && isAreaId(p.home) && isAreaId(p.office)
+      && typeof p.name === "string" && Number.isFinite(p.out) && Number.isFinite(p.back) && Number.isFinite(p.mins));
+    return ok.length ? ok : null;
+  } catch { return null; }
+}
+export const savePeople = (people: readonly Person[]) => set(KEYS.people, JSON.stringify(people));
+
+export const loadShowNames = () => get(KEYS.names) !== "0";
+export const saveShowNames = (v: boolean) => set(KEYS.names, v ? "1" : "0");
+
+export const getContribToken = () => get(KEYS.contrib);
+export function ensureContribToken(): string {
+  let t = get(KEYS.contrib);
+  if (!t) { t = crypto.randomUUID(); set(KEYS.contrib, t); }
+  return t;
+}
+
+/** Remove every key this site has written, except any listed in `keep`. */
+export function clearAll(keep: string[] = []) {
+  for (const k of Object.values(KEYS)) {
+    if (keep.includes(k)) continue;
+    try { localStorage.removeItem(k); } catch { /* ignore */ }
+  }
+}

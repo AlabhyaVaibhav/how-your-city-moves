@@ -1,0 +1,52 @@
+/* Inner pages: one dark card with brackets, a mono number label, and a readable prose column. */
+.page-wrap{ max-width:880px; }
+.page-card{ padding:30px 30px 34px; }
+@media (max-width:640px){ .page-card{ padding:22px 16px 26px; } }
+.page-card .card-head h1{ font-size:clamp(26px,5vw,34px); letter-spacing:-.025em; line-height:1.1; }
+.page-card .frame{ padding:22px 24px; }
+@media (max-width:640px){ .page-card .frame{ padding:18px 14px; } }
+.lede{ margin:14px 0 0; color:var(--ink-2); font-size:15px; line-height:1.55; max-width:62ch; }
+
+.prose{ max-width:66ch; font-size:15.5px; line-height:1.65; color:var(--ink); }
+.prose > :first-child{ margin-top:0; }
+.prose > :last-child{ margin-bottom:0; }
+.prose h2{ font-size:18px; font-weight:600; letter-spacing:-.01em; margin:34px 0 8px; display:flex; gap:10px; align-items:baseline; }
+.prose h2 .num{ font-size:11px; font-weight:400; }
+.prose h3{ font-size:15.5px; font-weight:600; margin:22px 0 4px; }
+.prose p,.prose ul,.prose ol,.prose dl{ margin:0 0 14px; }
+.prose ul,.prose ol{ padding-left:1.2em; }
+.prose li{ margin:4px 0; }
+.prose li::marker{ color:var(--ink-3t); }
+.prose a{ color:var(--ink); text-decoration:underline; text-decoration-color:var(--ink-3); text-underline-offset:3px; }
+.prose a:hover{ color:var(--orange); text-decoration-color:var(--orange); }
+.prose code{ font-family:var(--mono); font-size:.88em; background:var(--ink-4); padding:1px 5px; border-radius:4px; }
+.prose strong{ font-weight:600; }
+.prose .muted{ color:var(--ink-2); }
+.prose dt{ font-weight:600; margin-top:16px; }
+.prose dd{ margin:4px 0 0; color:var(--ink-2); }
+.prose table{ width:100%; border-collapse:collapse; font-size:14px; margin:0 0 16px; }
+.prose th,.prose td{ text-align:left; padding:8px 10px 8px 0; border-top:1px solid var(--ink-4); vertical-align:top; }
+.prose th{ font-weight:500; color:var(--ink-2); font-size:12px; }
+.prose td:first-child{ font-family:var(--mono); font-size:12.5px; white-space:nowrap; }
+.table-scroll{ overflow-x:auto; margin:0 0 16px; }
+.table-scroll table{ margin:0; min-width:460px; }
+
+.draft{ display:flex; gap:12px; align-items:flex-start; margin:0 0 22px; padding:12px 14px; border-radius:10px;
+  background:rgba(240,122,68,.1); box-shadow:inset 0 0 0 1px rgba(240,122,68,.4); color:var(--ink); font-size:14px; line-height:1.5; }
+.draft b{ color:var(--orange); font-family:var(--mono); font-size:11px; font-weight:500; letter-spacing:.04em; text-transform:uppercase; padding-top:2px; flex:none; }
+
+.faq details{ border-top:1px solid var(--ink-4); padding:4px 0; }
+.faq details:last-child{ border-bottom:1px solid var(--ink-4); }
+.faq summary{ cursor:pointer; list-style:none; display:flex; justify-content:space-between; gap:16px; align-items:center; min-height:44px; font-weight:500; }
+.faq summary::-webkit-details-marker{ display:none; }
+.faq summary::after{ content:"+"; font-family:var(--mono); color:var(--ink-3t); font-size:16px; }
+.faq details[open] summary::after{ content:"–"; color:var(--orange); }
+.faq details > :not(summary){ color:var(--ink-2); margin:0 0 12px; }
+
+.danger-zone{ margin-top:10px; display:flex; flex-wrap:wrap; gap:12px; align-items:center; }
+.clear-status{ font-family:var(--mono); font-size:12px; color:var(--ink-2); }
+.notfound-map{ margin:6px 0 0; }
+.notfound-map svg{ max-height:360px; }
+.prose a.cta{ color:#1e1e20; text-decoration:none; }
+.prose a.cta:hover{ color:#1e1e20; }
+.back{ margin:22px 0 0; }

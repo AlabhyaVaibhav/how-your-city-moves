@@ -1,0 +1,30 @@
+/* Design tokens, lifted from the prototype. */
+:root{
+  --page:#2a2a2d;
+  --card:#1e1e20;
+  --card-edge:rgba(236,226,207,.07);
+  --ink:#ece2cf;
+  --ink-2:rgba(236,226,207,.62);
+  --ink-3:rgba(236,226,207,.32);     /* lines, decoration */
+  --ink-3t:rgba(236,226,207,.56);    /* quiet text: lightest cream that still passes WCAG AA on --card */
+  --ink-4:rgba(236,226,207,.12);
+  --orange:#f07a44;
+  --orange-deep:#b9542a;
+  --paper:#ebe5d7;
+  --paper-ink:#2b2723;
+  --paper-ink-2:rgba(43,39,35,.55);
+  --paper-ink-2t:rgba(43,39,35,.72); /* small text on paper, AA */
+  --paper-ink-3:rgba(43,39,35,.22);
+  --head-ink:var(--ink);
+  --head-ink-2:var(--ink-2);
+  --sans:'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono:'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --radius:16px;
+  --gutter:28px;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){ --page:#d6d1c6; --head-ink:#1e1e20; --head-ink-2:rgba(30,30,32,.72); }
+}
+:root[data-theme="light"]{ --page:#d6d1c6; --head-ink:#1e1e20; --head-ink-2:rgba(30,30,32,.72); }
+:root[data-theme="dark"]{ --page:#2a2a2d; }
+@media (max-width:640px){ :root{ --gutter:14px; } }

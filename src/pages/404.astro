@@ -1,0 +1,26 @@
+---
+import Base from "../layouts/Base.astro";
+import Brackets from "../components/Brackets.astro";
+import "../styles/prose.css";
+import { href } from "../lib/paths";
+---
+<Base title="Page not found" description="This page took a wrong turn at Silk Board." noindex>
+<div class="wrap page-wrap">
+  <article class="card page-card" aria-labelledby="page-title">
+    <div class="card-head"><h1 id="page-title">Took a wrong turn</h1><span class="num" aria-hidden="true">404</span></div>
+    <p class="lede">This page isn't on the map. Maybe it's still stuck at Silk Board.</p>
+    <div class="frame notfound-map">
+      <Brackets />
+      <svg id="lostMap" viewBox="0 0 1200 640" aria-hidden="true"></svg>
+    </div>
+    <p class="back"><a class="cta" href={href("/")}>Back to the city</a></p>
+  </article>
+</div>
+</Base>
+
+<script>
+  import { drawBackdrop } from "../app/map";
+  import { drawLandmarks } from "../app/landmarks";
+  const svg = document.getElementById("lostMap");
+  if (svg) { drawBackdrop(svg); drawLandmarks(svg); }
+</script>

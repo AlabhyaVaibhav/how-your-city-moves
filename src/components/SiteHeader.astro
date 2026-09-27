@@ -1,0 +1,8 @@
+---
+import Mark from "./Mark.astro";
+import { href } from "../lib/paths";
+import { SITE } from "../config";
+---
+<header class="site-head">
+  <a class="wordmark" href={href("/")}><Mark />{SITE.name}</a>
+</header>

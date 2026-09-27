@@ -1,0 +1,110 @@
+---
+import Base from "../layouts/Base.astro";
+import PageCard from "../components/PageCard.astro";
+import DraftNotice from "../components/DraftNotice.astro";
+import "../styles/prose.css";
+import { ANALYTICS, PROVIDER_INFO, SITE, SUPABASE } from "../config";
+import { KEYS } from "../lib/storage";
+
+const provider = ANALYTICS.provider === "none" ? null : PROVIDER_INFO[ANALYTICS.provider];
+const events: [string, string][] = [
+  ["Page visits", "which page was opened (home, about, support, privacy, legal, or not found)"],
+  ["Adding a commuter", "the two areas picked from the list, the commute length as a range (under 30, 30 to 60, or over 60 minutes), whether a random name was used, and whether you opted into city-wide stats"],
+  ["Removing a commuter, resetting the samples", "only that it happened"],
+  ["Opening or closing the Add yourself dialog without adding", "only that it happened"],
+  ["Play, pause, dragging the timeline, changing speed", "play or pause, the hour you dragged to (0 to 23), and slow, normal or fast"],
+  ["Showing or hiding names", "on or off"],
+  ["Looking at a neighbourhood", "which of the nine areas, once per visit"],
+  ["Switching the rush-hours view", "yours or everyone"],
+  ["Sharing", "where you pressed Share (map or footer) and how you shared (share sheet, copy, WhatsApp, X, LinkedIn)"],
+  ["Arriving from a shared link", "how the link was shared"],
+  ["Clicking a link to another site", "that site's domain name only"],
+  ["Clearing your data", "only that it happened"],
+];
+---
+<Base title="Privacy" description="What How Bangalore moves stores, what it measures, and how to clear it.">
+<div class="wrap page-wrap">
+  <PageCard title="Privacy" num="007" lede="Short version: what you type stays in your browser. There are no accounts and no cookies.">
+    <DraftNotice />
+
+    <h2><span class="num">01</span>What you enter stays on your device</h2>
+    <p>The commuters you add, their names and times, and whether names are shown are saved in your browser's <code>localStorage</code>. They are not sent to me or to anyone else. The keys are:</p>
+    <ul>
+      <li><code>{KEYS.people}</code>: your list of commuters</li>
+      <li><code>{KEYS.names}</code>: whether the "Show names" switch is on</li>
+      <li><code>{KEYS.contrib}</code>: a random ID, only created if you opt into city-wide stats (see below)</li>
+    </ul>
+
+    <h2 id="city-stats"><span class="num">02</span>City-wide stats (only if you opt in)</h2>
+    <p>When you add yourself there's a checkbox, <strong>off by default</strong>, labelled "Add me to the city-wide stats". If you tick it, this is sent to a database hosted by Supabase:</p>
+    <ul>
+      <li>the area you live in and the area you work in, chosen from the fixed list of nine</li>
+      <li>when you leave home and when you leave work, rounded to the nearest half hour</li>
+      <li>your commute length, rounded to the nearest 5 minutes</li>
+      <li>a random ID created in your browser. It isn't linked to you; it exists so you can delete what you shared.</li>
+    </ul>
+    <p>Your name, or anything else you type, is <strong>never</strong> sent. Other visitors only see totals: how many people are on the road in each hour, and only once at least five commutes have been shared. Nobody can see individual entries through the site.</p>
+    <p>Like any web server, Supabase may briefly keep technical logs, such as IP addresses, to run and protect its service. See <a href="https://supabase.com/privacy" rel="noopener">Supabase's privacy policy</a>. TODO: note which Supabase region the project is in.</p>
+    {!SUPABASE.enabled && <p class="muted">City-wide stats are not switched on for this deployment right now, so nothing is sent.</p>}
+
+    <h2><span class="num">03</span>Anonymous usage analytics</h2>
+    {provider ? (
+      <p>To see which parts of the site get used, I count visits and a few interactions with <a href={provider.policy} rel="noopener">{provider.name}</a>. It's set up without cookies and without anything that identifies you across sites or visits. Read their <a href={provider.policy} rel="noopener">data policy</a>.</p>
+    ) : (
+      <p>Usage analytics are not switched on for this deployment right now. If they are turned on, they'll use a cookieless provider (Plausible Analytics, or PostHog in memory-only mode), and this section will name it.</p>
+    )}
+    <p><strong>Nothing you type into the app is ever sent.</strong> No names, exact times, or free text. Here is everything that's counted:</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th scope="col">When you…</th><th scope="col">What's recorded</th></tr></thead>
+        <tbody>{events.map(([a, b]) => <tr><td>{a}</td><td>{b}</td></tr>)}</tbody>
+      </table>
+    </div>
+
+    <h2><span class="num">04</span>No accounts, no cookies</h2>
+    <p>There's nothing to sign up for, and this site sets no cookies. Fonts are served from this site, not from Google or another font service.</p>
+
+    <h2 id="clear"><span class="num">05</span>Clear your data</h2>
+    <p>You can clear this site's data in your browser settings (look for "site data" or "website data" for this address). Or press the button below. It:</p>
+    <ol>
+      <li>deletes anything you shared to the city-wide stats from this browser</li>
+      <li>removes all of this site's keys from your browser's storage</li>
+    </ol>
+    <p>The home page will then show the six sample commuters again.</p>
+    <div class="danger-zone">
+      <button class="cta" type="button" id="clearData">Clear my data</button>
+      <span class="clear-status" id="clearStatus" role="status" aria-live="polite"></span>
+    </div>
+
+    <h2><span class="num">06</span>Changes and contact</h2>
+    <p>If this policy changes, the date below will change too. Questions go to <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.</p>
+    <p class="muted">Last updated: TODO: date.</p>
+  </PageCard>
+</div>
+</Base>
+
+<script>
+  import { KEYS, clearAll } from "../lib/storage";
+  import { forgetMyCommutes } from "../lib/cityStats";
+  import { track } from "../lib/analytics";
+
+  const btn = document.getElementById("clearData") as HTMLButtonElement;
+  const status = document.getElementById("clearStatus")!;
+  btn.addEventListener("click", async () => {
+    btn.disabled = true;
+    status.textContent = "Clearing…";
+    let remote = "", keep: string[] = [];
+    try {
+      const n = await forgetMyCommutes();
+      if (n) remote = ` and removed ${n} shared ${n === 1 ? "commute" : "commutes"}`;
+    } catch {
+      // keep the token so a retry can still find and delete the shared rows
+      keep = [KEYS.contrib];
+      remote = ". Couldn't reach the city-wide stats, so press the button again later to remove what you shared";
+    }
+    clearAll(keep);
+    track("data_cleared");
+    status.textContent = `Done. Cleared this browser's data${remote}.`;
+    btn.disabled = false;
+  });
+</script>

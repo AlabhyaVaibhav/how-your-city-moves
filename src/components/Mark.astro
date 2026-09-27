@@ -1,0 +1,12 @@
+---
+/* The isometric-block mark used in the wordmark and favicon. */
+interface Props { size?: number; bg?: boolean }
+const { size = 22, bg = false } = Astro.props;
+---
+<svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+  {bg && <rect width="32" height="32" rx="7" fill="#1e1e20" />}
+  <path d="M16 5 L27 11 L16 17 L5 11 Z" fill="#f07a44" />
+  <path d="M5 11 L16 17 L16 28 L5 22 Z" fill="#b9542a" />
+  <path d="M27 11 L16 17 L16 28 L27 22 Z" fill="#8f3f1e" />
+  <path d="M16 5 L27 11 L27 22 L16 28 L5 22 L5 11 Z M16 17 L16 28 M5 11 L16 17 L27 11" fill="none" stroke="#ece2cf" stroke-opacity=".75" stroke-width="1" stroke-linejoin="round" />
+</svg>

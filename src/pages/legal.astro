@@ -1,0 +1,40 @@
+---
+import Base from "../layouts/Base.astro";
+import PageCard from "../components/PageCard.astro";
+import DraftNotice from "../components/DraftNotice.astro";
+import "../styles/prose.css";
+import { SITE } from "../config";
+import { href } from "../lib/paths";
+---
+<Base title="Legal" description="Terms of use, disclaimer and credits for How Bangalore moves.">
+<div class="wrap page-wrap">
+  <PageCard title="Legal" num="008" lede="Terms of use, a disclaimer, and credits.">
+    <DraftNotice />
+
+    <h2><span class="num">01</span>Terms of use</h2>
+    <p>{SITE.name} is a free, personal project offered as is. You're welcome to use it, share it and link to it. Please don't try to break it, overload it, or fill the city-wide stats with fake entries.</p>
+    <p>I may change, pause or take down the site at any time. TODO: add your name or entity as the operator, and your jurisdiction if you want to state one.</p>
+
+    <h2><span class="num">02</span>Disclaimer</h2>
+    <ul>
+      <li><strong>Not to scale.</strong> Map positions are stylized. Distances, directions and sizes don't match the real city.</li>
+      <li><strong>Not real traffic data.</strong> Commute times are entered by users. The shared stats are only what visitors chose to submit.</li>
+      <li><strong>Artistic interpretations.</strong> The landmark drawings are loose sketches inspired by places in Bangalore. They show no real logos or wordmarks. This site has no affiliation with, and is not endorsed by, any business, building owner or organisation shown or named.</li>
+      <li><strong>Not for navigation or planning.</strong> Don't use this site to plan a journey, pick a home or office, or make any other decision.</li>
+    </ul>
+    <p>To the extent the law allows, the site is provided without warranties of any kind, and I'm not liable for any loss arising from its use. TODO: have this reviewed.</p>
+
+    <h2><span class="num">03</span>Privacy</h2>
+    <p>See the <a href={href("/privacy")}>privacy page</a> for what's stored and measured.</p>
+
+    <h2><span class="num">04</span>Credits</h2>
+    <ul>
+      <li>Typefaces: <a href="https://vercel.com/font" rel="noopener">Geist and Geist Mono</a> by Vercel, under the SIL Open Font License 1.1, self-hosted via <a href="https://fontsource.org" rel="noopener">Fontsource</a>.</li>
+      <li>Built with <a href="https://astro.build" rel="noopener">Astro</a>. Hosted on <a href="https://vercel.com" rel="noopener">Vercel</a>.</li>
+      <li>City-wide stats stored with <a href="https://supabase.com" rel="noopener">Supabase</a>.</li>
+      <li>Illustrations, isometric map and code: TODO: your name, and a licence if you want to set one.</li>
+    </ul>
+    <p class="muted">Last updated: TODO: date.</p>
+  </PageCard>
+</div>
+</Base>

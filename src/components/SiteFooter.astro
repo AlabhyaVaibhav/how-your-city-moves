@@ -1,0 +1,29 @@
+---
+import ShareIcon from "./ShareIcon.astro";
+import { href } from "../lib/paths";
+import { SITE } from "../config";
+
+const links = [
+  { path: "/about", label: "About me" },
+  { path: "/support", label: "Support" },
+  { path: "/privacy", label: "Privacy" },
+  { path: "/legal", label: "Legal" },
+];
+const here = Astro.url.pathname.replace(/\/$/, "");
+const year = new Date().getFullYear();
+---
+<footer class="site-foot">
+  <div class="wrap">
+    <nav class="foot-nav" aria-label="Site">
+      <ul>
+        {links.map(l => (
+          <li><a href={href(l.path)} aria-current={here.endsWith(l.path) ? "page" : undefined}>{l.label}</a></li>
+        ))}
+      </ul>
+    </nav>
+    <div class="foot-r">
+      <button class="pill" type="button" data-share="footer"><ShareIcon />Share</button>
+      <p class="copy">© <span data-year>{year}</span> {SITE.owner}</p>
+    </div>
+  </div>
+</footer>

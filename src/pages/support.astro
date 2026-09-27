@@ -1,0 +1,56 @@
+---
+import Base from "../layouts/Base.astro";
+import PageCard from "../components/PageCard.astro";
+import "../styles/prose.css";
+import { SITE } from "../config";
+import { href } from "../lib/paths";
+const bugSubject = encodeURIComponent("Bug: How Bangalore moves");
+const bugBody = encodeURIComponent("What happened:\n\nWhat you expected:\n\nSteps to reproduce:\n1.\n2.\n\nDevice and browser:\n");
+---
+<Base title="Support" description="Get help with How Bangalore moves, send feedback, or report a bug.">
+<div class="wrap page-wrap">
+  <PageCard title="Support" num="006" lede="Stuck, curious, or found something broken? Here's how to reach me.">
+    <h2><span class="num">01</span>Get help or give feedback</h2>
+    <p>Email <a href={`mailto:${SITE.email}`}>{SITE.email}</a>. <!-- TODO: confirm the contact address in src/config.ts --> I read everything, and I try to reply within a few days. TODO: add any other channel you want people to use (a form, GitHub issues, a social handle).</p>
+
+    <h2><span class="num">02</span>Questions</h2>
+    <div class="faq">
+      <details>
+        <summary>Where does my commute go when I add myself?</summary>
+        <p>It's saved in your browser's local storage, on your device only. If you tick "Add me to the city-wide stats", a rounded, nameless copy is also sent to the shared stats. The <a href={href("/privacy")}>privacy page</a> has the details.</p>
+      </details>
+      <details>
+        <summary>How do I remove someone from the list?</summary>
+        <p>Press the × next to their name in the "In the city" card. "Reset to sample commuters" brings back the six sample people.</p>
+      </details>
+      <details>
+        <summary>Can I get rid of everything I've added?</summary>
+        <p>Yes. Use the "Clear my data" button on the <a href={href("/privacy#clear")}>privacy page</a>. It wipes this site's storage in your browser and removes anything you shared to the city-wide stats.</p>
+      </details>
+      <details>
+        <summary>Why doesn't my area appear in the list?</summary>
+        <p>The map only has nine places for now, chosen to make a readable drawing. TODO: say whether you plan to add more, and how people can ask for one.</p>
+      </details>
+      <details>
+        <summary>Is this real traffic data?</summary>
+        <p>No. The times are what people type in, and the map is a stylized drawing. Please don't use it to plan a journey.</p>
+      </details>
+      <details>
+        <summary>The animation is distracting. Can I stop it?</summary>
+        <p>Press the pause button in the time bar. If your device is set to reduce motion, the city starts paused and moves in simple steps.</p>
+      </details>
+    </div>
+
+    <h2 id="bug"><span class="num">03</span>Report a bug</h2>
+    <p>The most useful reports say:</p>
+    <ul>
+      <li>what you did, and what happened</li>
+      <li>what you expected to happen</li>
+      <li>your device and browser (for example "iPhone 13, Safari")</li>
+      <li>a screenshot, if you can</li>
+    </ul>
+    <p><a class="cta" href={`mailto:${SITE.email}?subject=${bugSubject}&body=${bugBody}`}>Email a bug report</a></p>
+    <p class="muted">TODO: if you'd rather take bug reports on GitHub, link the issues page here.</p>
+  </PageCard>
+</div>
+</Base>

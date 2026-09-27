@@ -1,0 +1,14 @@
+---
+/* Inner-page card: dark card, number label, corner-bracket frame, prose column. */
+import Brackets from "./Brackets.astro";
+interface Props { title: string; num: string; lede?: string }
+const { title, num, lede } = Astro.props;
+---
+<article class="card page-card" aria-labelledby="page-title">
+  <div class="card-head"><h1 id="page-title">{title}</h1><span class="num" aria-hidden="true">{num}</span></div>
+  {lede && <p class="lede">{lede}</p>}
+  <div class="frame">
+    <Brackets />
+    <div class="prose"><slot /></div>
+  </div>
+</article>

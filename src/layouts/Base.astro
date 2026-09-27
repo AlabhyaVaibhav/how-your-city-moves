@@ -1,0 +1,74 @@
+---
+import "@fontsource/geist/latin-400.css";
+import "@fontsource/geist/latin-500.css";
+import "@fontsource/geist/latin-600.css";
+import "@fontsource/geist-mono/latin-400.css";
+import "@fontsource/geist-mono/latin-500.css";
+import geist400 from "@fontsource/geist/files/geist-latin-400-normal.woff2?url";
+import "../styles/tokens.css";
+import "../styles/base.css";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import SharePopover from "../components/SharePopover.astro";
+import { SITE } from "../config";
+import { href } from "../lib/paths";
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Home page: no site header bar, the hero carries the name. */
+  home?: boolean;
+  noindex?: boolean;
+}
+const { title, description = SITE.description, home = false, noindex = false } = Astro.props;
+const fullTitle = title ? `${title} · ${SITE.name}` : SITE.name;
+const canonical = new URL(Astro.url.pathname.replace(/(.)\/$/, "$1"), SITE.url).toString();
+const ogImage = new URL(href("/og.png"), SITE.url).toString();
+---
+<!doctype html>
+<html lang="en-IN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>{fullTitle}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonical} />
+  {noindex && <meta name="robots" content="noindex" />}
+  <meta name="theme-color" content="#2a2a2d" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#d6d1c6" media="(prefers-color-scheme: light)" />
+  <meta name="color-scheme" content="dark light" />
+  <link rel="icon" href={href("/favicon.svg")} type="image/svg+xml" />
+  <link rel="icon" href={href("/favicon-32.png")} sizes="32x32" type="image/png" />
+  <link rel="apple-touch-icon" href={href("/apple-touch-icon.png")} />
+  <link rel="preload" href={geist400} as="font" type="font/woff2" crossorigin />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content={SITE.name} />
+  <meta property="og:title" content={title ?? SITE.name} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={canonical} />
+  <meta property="og:image" content={ogImage} />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="An isometric line drawing of Bangalore landmarks on a charcoal background, with commuters moving between them." />
+  <meta property="og:locale" content="en_IN" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title ?? SITE.name} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={ogImage} />
+  <meta name="twitter:image:alt" content="An isometric line drawing of Bangalore landmarks on a charcoal background." />
+  <slot name="head" />
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  {!home && <SiteHeader />}
+  <main id="main" tabindex="-1">
+    <slot />
+  </main>
+  <SiteFooter />
+  <SharePopover />
+  <script>
+    import "../lib/site";
+  </script>
+</body>
+</html>
