@@ -122,3 +122,13 @@ opt in to the city-wide view, that lets "Clear my data" delete what you shared.
   Bengaluru). They've been reviewed by the owner but are not formal legal advice.
 - **Chip in**: the UPI box on `/support` builds its QR codes at build time from `SITE.upi` in `src/config.ts`.
 - **Bugs**: reported through the GitHub issue form in `.github/ISSUE_TEMPLATE/bug_report.yml`.
+
+## Contributing
+
+Anyone with a GitHub account can open an issue. Changes land through pull requests only:
+
+1. Open (or find) an issue for the change.
+2. Open a pull request from a branch or fork, with `Closes #<issue>` in the description. A required check
+   fails without it.
+3. The owner reviews it. Only an approval from the code owner (`.github/CODEOWNERS`) counts, and only the
+   owner can merge. Nobody can push directly to `main`, force-push it or delete it.
