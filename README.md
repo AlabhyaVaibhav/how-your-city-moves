@@ -17,7 +17,7 @@ npm run preview    # serve dist/ locally
 npm run assets     # re-render public/og.png and favicons from the map code
 ```
 
-Needs Node 20+. `npm run build` runs `astro check` first, so type errors fail the build.
+Needs Node 22.12+ (Astro 7). `npm run build` runs `astro check` first, so type errors fail the build.
 
 ## Configure
 
