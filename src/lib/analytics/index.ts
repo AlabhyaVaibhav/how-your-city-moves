@@ -15,15 +15,16 @@ export interface LoggedEvent { name: string; props?: Props; at: number; sent: bo
 
 const log: LoggedEvent[] = [];
 const listeners = new Set<(e: LoggedEvent) => void>();
-let adapter: Adapter | null | undefined;
+// cache the promise, not the result: events fired while the adapter loads must share one instance
+let adapter: Promise<Adapter | null> | undefined;
 
-async function getAdapter(): Promise<Adapter | null> {
-  if (adapter !== undefined) return adapter;
-  const p = activeProvider();
-  if (p === "plausible") adapter = (await import("./plausible")).plausibleAdapter(ANALYTICS.plausible.domain, ANALYTICS.plausible.src);
-  else if (p === "posthog") adapter = (await import("./posthog")).posthogAdapter(ANALYTICS.posthog.key, ANALYTICS.posthog.host);
-  else adapter = null;
-  return adapter;
+function getAdapter(): Promise<Adapter | null> {
+  return adapter ??= (async () => {
+    const p = activeProvider();
+    if (p === "plausible") return (await import("./plausible")).plausibleAdapter(ANALYTICS.plausible.domain, ANALYTICS.plausible.src);
+    if (p === "posthog") return (await import("./posthog")).posthogAdapter(ANALYTICS.posthog.key, ANALYTICS.posthog.host);
+    return null;
+  })();
 }
 
 function record(name: string, props: Props | undefined, send: (a: Adapter) => void) {
