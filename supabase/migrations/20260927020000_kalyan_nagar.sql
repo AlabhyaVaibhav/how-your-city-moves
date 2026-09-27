@@ -1,10 +1,9 @@
--- Kalyan Nagar becomes a tenth area, and generated "simulated baseline" rows can live alongside real
--- shared commutes. Generated rows are flagged with is_seed and are only shown until enough real
--- commutes exist; the site labels them as simulated.
+-- Kalyan Nagar becomes a tenth area, rows get an is_backfill flag, and the hourly counting logic
+-- moves into a shared helper.
 
--- 1. seed flag ------------------------------------------------------------------
-alter table public.commutes add column if not exists is_seed boolean not null default false;
-create index if not exists commutes_is_seed_idx on public.commutes (is_seed);
+-- 1. backfill flag --------------------------------------------------------------
+alter table public.commutes add column if not exists is_backfill boolean not null default false;
+create index if not exists commutes_is_backfill_idx on public.commutes (is_backfill);
 
 -- 2. new area -----------------------------------------------------------------
 alter table public.commutes drop constraint areas_known;
@@ -34,8 +33,8 @@ begin
      or (select count(*) from public.commutes c where c.contributor_hash = h) >= 50 then
     raise exception 'rate_limited' using errcode = 'P0001';
   end if;
-  -- whole site: a coarse brake against scripted floods (real submissions only)
-  if (select count(*) from public.commutes c where not c.is_seed and c.created_at > now() - interval '10 minutes') >= 500 then
+  -- whole site: a coarse brake against scripted floods
+  if (select count(*) from public.commutes c where not c.is_backfill and c.created_at > now() - interval '10 minutes') >= 500 then
     raise exception 'busy' using errcode = 'P0001';
   end if;
 
@@ -51,8 +50,8 @@ end;
 $$;
 
 -- 3. stats ----------------------------------------------------------------------
--- Shared by both stats functions: hourly on-the-road counts for a set of rows.
-create or replace function public._rush_hours(p_include_seed boolean)
+-- Hourly on-the-road counts, shared by the stats functions.
+create or replace function public._rush_hours(p_include_backfill boolean)
 returns jsonb
 language sql
 stable
@@ -63,7 +62,7 @@ as $$
     select leave_home as l, commute_mins as m,
            case when leave_work < leave_home + commute_mins then leave_work + 1440 else leave_work end as w
     from public.commutes
-    where p_include_seed or not is_seed
+    where p_include_backfill or not is_backfill
   ),
   hrs as (
     select h.h, count(c.l) filter (where exists (
@@ -77,35 +76,3 @@ as $$
   select jsonb_build_object('total', (select count(*)::int from c), 'hours', (select jsonb_agg(n order by h) from hrs));
 $$;
 revoke all on function public._rush_hours(boolean) from public, anon, authenticated;
-
--- v1, still called by the currently deployed site: real shared commutes only, never generated ones.
-create or replace function public.city_rush_hours()
-returns jsonb
-language sql
-stable
-security definer
-set search_path = ''
-as $$
-  select case when (r->>'total')::int < 5 then null else r end
-  from (select public._rush_hours(false) as r) x;
-$$;
-
--- v2: simulated baseline + real shares until 200 real commutes exist, then real only.
---   { total, shared, simulated: bool, hours: int[24] }  or null if fewer than 5 rows in play.
-create or replace function public.city_rush_hours_v2()
-returns jsonb
-language sql
-stable
-security definer
-set search_path = ''
-as $$
-  with shared_rows as (select count(*)::int as n from public.commutes where not is_seed),
-       pick as (select (select n from shared_rows) < 200 as sim),
-       r as (select public._rush_hours((select sim from pick)) as j)
-  select case when ((select j from r)->>'total')::int < 5 then null
-              else (select j from r) || jsonb_build_object('shared', (select n from shared_rows), 'simulated', (select sim from pick))
-         end;
-$$;
-
-revoke all on function public.city_rush_hours_v2() from public;
-grant execute on function public.city_rush_hours_v2() to anon, authenticated;

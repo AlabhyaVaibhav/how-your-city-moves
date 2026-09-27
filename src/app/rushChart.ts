@@ -1,6 +1,6 @@
 /* "Rush hours": 24 isometric bars, one per hour. Shows either your commuters or the city-wide aggregate. */
 import { CARD, F2, INK, OR, ORD, dust, el, pts, radial, type Pt } from "./iso";
-import { hourName, seeded } from "./sim";
+import { hourName, rng } from "./sim";
 import { bindTip, esc } from "./tooltip";
 
 /** One hour: how many people are on the road, and (for your own list) who. */
@@ -17,7 +17,7 @@ export class RushChart {
     const bars = this.svg;
     bars.replaceChildren(); this.tops = [];
     radial(el("defs", {}, bars), "bg", .6);
-    dust(bars, seeded(11), 40, 320, 320);
+    dust(bars, rng(11), 40, 320, 320);
 
     const k = 21, ox = 34, oy = 150;
     const bi = (gx: number, gy: number, h = 0): Pt => [ox + (gx - gy) * k * .866, oy + (gx + gy) * k * .5 - h];

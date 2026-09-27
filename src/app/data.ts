@@ -22,7 +22,7 @@ const RAW_NODES = {
   whitefield:   { label: "Whitefield",        short: "Whitefield",  g: [10, 3],    kind: "office", h: 106 },
   hsr:          { label: "HSR Layout",        short: "HSR",         g: [6.5, 7],   kind: "home" },
   electronic:   { label: "Electronic City",   short: "E-City",      g: [5.5, 10],  kind: "office", h: 88 },
-  // added last so the seeded randomness of every earlier landmark stays the same
+  // added last so every earlier landmark keeps its exact drawing
   kalyannagar:  { label: "Kalyan Nagar",      short: "Kalyan Ngr",  g: [7.2, 0.4], kind: "home" },
 } satisfies Record<string, Area>;
 

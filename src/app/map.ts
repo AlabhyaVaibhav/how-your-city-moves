@@ -2,7 +2,7 @@
 import { NODES, type AreaId, type Person } from "./data";
 import { CARD, INK, K, OR, dust, el, iso, radial } from "./iso";
 import { drawLandmarks } from "./landmarks";
-import { lerp, seeded, type Snapshot } from "./sim";
+import { lerp, rng, type Snapshot } from "./sim";
 import { bindTip, esc } from "./tooltip";
 import type { CrowdFrame } from "./crowd";
 
@@ -23,7 +23,7 @@ export interface SceneOpts { compact?: boolean; people?: readonly Person[] }
 
 /** Dust, dot grid, dashed rings. Shared with the OG image script. */
 export function drawBackdrop(svg: Element) {
-  const r = seeded(7);
+  const r = rng(7);
   dust(el("g", { opacity: .5 }, svg), r, 120, 1200, 640, () => r() < .85 ? .7 : 1.2, .25, .4);
   const grid = el("g", {}, svg);
   for (let gx = -3; gx <= 15; gx++) for (let gy = -5; gy <= 15; gy++) {

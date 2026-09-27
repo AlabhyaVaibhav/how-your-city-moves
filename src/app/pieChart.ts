@@ -1,6 +1,6 @@
 /* "Where everyone is": an isometric pie of home / on the road / at work, with a tally underneath. */
 import { CARD, F2, INK, OR, ORD, dust, el, pts, radial, type Pt } from "./iso";
-import { lerp, seeded, type Status } from "./sim";
+import { lerp, rng, type Status } from "./sim";
 
 export type Counts = Record<Status, number>;
 const CATS: Status[] = ["home", "transit", "office"];
@@ -33,7 +33,7 @@ export class PieChart {
     const pie = this.svg;
     pie.replaceChildren();
     radial(el("defs", {}, pie), "pg", .35);
-    dust(pie, seeded(5), 32, 320, 250);
+    dust(pie, rng(5), 32, 320, 250);
 
     const cx = 160, cy = 112, rx = 108, ry = 50, T = 16;
     el("ellipse", { cx, cy: cy + 44, rx: rx + 22, ry: ry + 14, fill: "none", stroke: INK, "stroke-opacity": .3, "stroke-dasharray": "1.5 5" }, pie);

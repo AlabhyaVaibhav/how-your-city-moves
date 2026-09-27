@@ -4,7 +4,7 @@
 --        h: { area: n }  at home        w: { area: n }  at work
 --        o: { "home>work": n } heading to work     b: { "home>work": n } heading home
 -- Uses the same status rules as the app's statusAt(). Counts under 3 are left out so no single
--- commute can be picked out. Generated baseline rows are included until 200 real commutes exist.
+-- commute can be picked out.
 -- Returns null if fewer than 5 rows are in play.
 
 create or replace function public.city_view()
@@ -14,12 +14,12 @@ stable
 security definer
 set search_path = ''
 as $$
-  with flag as (select (select count(*) from public.commutes where not is_seed) < 200 as seed),
+  with flag as (select (select count(*) from public.commutes where not is_backfill) < 200 as backfill),
   c as (
     select home_area as h, work_area as w, leave_home as l, greatest(5, commute_mins) as m,
            case when leave_work < leave_home + greatest(5, commute_mins) then leave_work + 1440 else leave_work end as w0
     from public.commutes
-    where (select seed from flag) or not is_seed
+    where (select backfill from flag) or not is_backfill
   ),
   c2 as (select h, w, l, m, greatest(w0, l + m) as wk from c),
   st as (
@@ -44,7 +44,7 @@ as $$
   )
   select case when (select count(*) from c2) < 5 then null
               else jsonb_build_object(
-                'hours', public._rush_hours((select seed from flag)) -> 'hours',
+                'hours', public._rush_hours((select backfill from flag)) -> 'hours',
                 'slots', (select jsonb_agg(j order by s) from slots))
          end;
 $$;

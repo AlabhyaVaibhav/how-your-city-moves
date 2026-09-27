@@ -10,12 +10,12 @@ stable
 security definer
 set search_path = ''
 as $$
-  with flag as (select (select count(*) from public.commutes where not is_seed) < 200 as seed),
+  with flag as (select (select count(*) from public.commutes where not is_backfill) < 200 as backfill),
   c as (
     select home_area as h, work_area as w, leave_home as l, greatest(5, commute_mins) as m,
            case when leave_work < leave_home + greatest(5, commute_mins) then leave_work + 1440 else leave_work end as w0
     from public.commutes
-    where (select seed from flag) or not is_seed
+    where (select backfill from flag) or not is_backfill
   ),
   c2 as (select h, w, l, m, greatest(w0, l + m) as wk from c),
   st as (
@@ -42,7 +42,7 @@ as $$
               else jsonb_build_object(
                 'total', (select count(*)::int from c2),
                 'routes', coalesce((select jsonb_object_agg(h || '>' || w, n) from (select h, w, count(*)::int as n from c2 group by h, w) z where n >= 3), '{}'::jsonb),
-                'hours', public._rush_hours((select seed from flag)) -> 'hours',
+                'hours', public._rush_hours((select backfill from flag)) -> 'hours',
                 'slots', (select jsonb_agg(j order by s) from slots))
          end;
 $$;

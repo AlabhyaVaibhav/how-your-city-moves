@@ -9,7 +9,7 @@ export const toMin = (s: string) => { const [h, m] = (s || "0:0").split(":").map
 export const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 export const ease = (t: number) => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 export const hourName = (h: number) => (h % 12 || 12) + (h < 12 ? " am" : " pm");
-export function seeded(n: number) { let s = n * 9301 + 49297; return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; }; }
+export function rng(n: number) { let s = n * 9301 + 49297; return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; }; }
 
 export function statusAt(p: Person, t: number): { s: Status; f?: number; dir?: 1 | -1 } {
   t = ((t % 1440) + 1440) % 1440;

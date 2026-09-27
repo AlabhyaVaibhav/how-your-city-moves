@@ -1,117 +1,124 @@
 # How Bangalore moves
 
-An interactive isometric map of Bangalore commuters: add when people leave home, where they go and how
+An interactive isometric map of how Bengaluru commutes. Add when people leave home, where they go and how
 long the ride takes, and the city steps forward every half hour on a 24-hour loop.
 
-It's a static Astro site with vanilla TypeScript, no UI framework. Anonymous, opt-in city-wide stats live in
-Supabase, and it deploys to Vercel. The original single-file prototype is in `reference/city-movement.html`.
+Live at **https://www.howyourcitymoves.fyi**
+
+- **The city, right now**: hand-drawn isometric landmarks for ten areas. City-wide traffic flows along the
+  routes, and your own commuters are drawn on top in cream.
+- **Rush hours**: people on the road in each hour.
+- **Where everyone is**: at home, on the road, at work, updating with the clock.
+- **In the city**: the busiest routes across the city (hover one to highlight it on the map), plus your own
+  commuters.
+- **Add yourself**: saved in your browser. You can opt in to add an anonymous, rounded copy to the
+  city-wide view.
+
+It's a static Astro site written in TypeScript, with no UI framework. It runs on Vercel, with Supabase for the
+city-wide view and PostHog for cookieless analytics. The original single-file prototype is in
+`reference/city-movement.html`.
 
 ## Run it
 
 ```sh
 npm install
-npm run dev        # http://localhost:4321   (add ?debug=analytics to see events)
-npm test           # unit tests (sim + analytics wrapper)
+npm run dev        # http://localhost:4321   (add ?debug=analytics to see analytics events)
+npm test           # unit tests
 npm run build      # type-check + static build into dist/
 npm run preview    # serve dist/ locally
-npm run assets     # re-render public/og.png and favicons from the map code
+npm run assets     # re-render public/og.png and the favicons from the map code
 ```
 
 Needs Node 22.12+ (Astro 7). `npm run build` runs `astro check` first, so type errors fail the build.
 
 ## Configure
 
-Copy `.env.example` to `.env` for local builds. In Vercel, set the same variables under
-Project → Settings → Environment Variables. All are `PUBLIC_*` because they ship to the browser.
-Put no secrets in them.
+Copy `.env.example` to `.env` for local builds. In Vercel, set the same variables under Project → Settings →
+Environment Variables. Every variable is `PUBLIC_*` and ends up in the browser, so they are all values that
+are meant to be public.
 
 | Variable | What it does |
 |---|---|
-| `PUBLIC_SITE_URL` | Production URL. Used for canonical links, OG tags and share links. |
-| `PUBLIC_ANALYTICS_PROVIDER` | `plausible`, `posthog` or `none`. |
-| `PUBLIC_PLAUSIBLE_DOMAIN` / `PUBLIC_PLAUSIBLE_SRC` | Your Plausible site and its **manual** script URL. |
-| `PUBLIC_POSTHOG_KEY` / `PUBLIC_POSTHOG_HOST` | PostHog project key and host (EU or US). |
+| `PUBLIC_SITE_URL` | Production URL, used for canonical links, Open Graph tags and share links. |
+| `PUBLIC_ANALYTICS_PROVIDER` | `posthog`, `plausible` or `none`. |
+| `PUBLIC_POSTHOG_KEY` / `PUBLIC_POSTHOG_HOST` | PostHog project key and ingestion host (US or EU). |
+| `PUBLIC_PLAUSIBLE_DOMAIN` / `PUBLIC_PLAUSIBLE_SRC` | Plausible site and its **manual** script URL. |
 | `PUBLIC_ANALYTICS_IN_DEV` | `1` to send real events from `npm run dev`. |
-| `PUBLIC_SUPABASE_URL` / `PUBLIC_SUPABASE_ANON_KEY` | Turns on the city-wide stats opt-in. Use the anon/publishable key only. |
+| `PUBLIC_SUPABASE_URL` / `PUBLIC_SUPABASE_ANON_KEY` | Supabase project URL and publishable key. Turns on the city-wide view. |
 | `BASE_PATH` | Only for GitHub Pages project sites, e.g. `/how-bangalore-moves`. |
 
-The Content-Security-Policy is generated at build time from these values, so only the hosts you configure
-are allowed. Rebuild after changing them.
+The Content-Security-Policy is generated at build time from these values, so only the hosts you configure are
+allowed. Rebuild after changing them.
 
 ### Analytics
 
-- **Plausible** (default): add the site in Plausible, then set the provider, domain and `script.manual.js` URL.
-- **PostHog**: set `PUBLIC_ANALYTICS_PROVIDER=posthog` plus the key and host. It runs cookieless and in memory,
-  with no autocapture and no session recording.
-- **None**: leave the provider empty. `track()` only logs to the console.
-- In `npm run dev`, nothing is ever sent unless `PUBLIC_ANALYTICS_IN_DEV=1`.
+All tracking goes through `track()` in `src/lib/analytics`. Swapping providers needs no changes to app code.
 
-Every event, its props, and where it fires are listed in [`docs/analytics.md`](docs/analytics.md).
-`/privacy` names the configured provider automatically.
+- **PostHog** (in use): cookieless, in-memory only, no autocapture, no session recording, no person profiles.
+  Keep "Discard client IP data" on in the PostHog project settings, because the privacy page promises it.
+- **Plausible**: set the provider, domain and `script.manual.js` URL.
+- **None**: `track()` only logs to the console. In `npm run dev` nothing is sent unless `PUBLIC_ANALYTICS_IN_DEV=1`.
 
-### Supabase (city-wide stats)
+Every event, its props and where it fires are listed in [`docs/analytics.md`](docs/analytics.md). `/privacy`
+names the configured provider automatically.
 
-1. Create a Supabase project. A region near your users, like Mumbai (`ap-south-1`), keeps it fast.
-2. Run `supabase/migrations/20260927000000_city_stats.sql`, either in the SQL editor or with
-   `supabase link && supabase db push`.
+### Supabase (city-wide view)
+
+1. Create a Supabase project. Mumbai (`ap-south-1`) keeps it close to Bengaluru.
+2. Apply the migrations in `supabase/migrations/`: `supabase link`, then `supabase db push`.
 3. Set `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY`.
 
-The table is closed to the browser (RLS on, no grants). The site can only call three functions:
+The `commutes` table is closed to the browser (RLS on, no grants). The site can only call three functions:
 
-- `submit_commute`: validates, rounds and rate-limits a submission
-- `city_rush_hours_v2`: returns 24 hourly counts plus `shared` / `simulated` flags, once at least 5 rows exist
-  (`city_rush_hours` is the older, real-only version)
-- `forget_my_commutes`: deletes this browser's rows for "Clear my data"
+- `submit_commute`: validates, rounds and rate-limits an opt-in submission. No names are ever sent.
+- `city_view`: returns totals only. That's commuters per route, and for every half hour how many people are
+  at home, at work or on each route, plus people on the road per hour. Any count under 3 is left out.
+- `forget_my_commutes`: deletes this browser's submissions, for "Clear my data" on `/privacy`.
 
-No names are stored. Leave the variables empty and the opt-in checkbox and the "Everyone" toggle stay hidden.
-
-**Simulated baseline.** Migration `20260927020100_seed_simulated_baseline.sql` adds ~4,000 generated commutes
-(`is_seed = true`) following typical Bengaluru patterns. `city_rush_hours_v2()` includes them until 200 real
-commutes have been shared, then shows real data only, and the site labels them as simulated. To remove them:
-
-```sql
-delete from public.commutes where is_seed;
-```
+If the variables are empty or Supabase can't be reached, the site falls back to your own commuters only.
 
 ## Deploy
 
-**Vercel** (primary): import the repo, or run `vercel` then `vercel --prod`. `vercel.json` sets the build,
-clean URLs, cache headers for hashed assets, and security headers. Remember the env vars.
+**Vercel** (in use): `vercel` for a preview, `vercel --prod` for production. `vercel.json` sets clean URLs,
+cache headers for hashed assets, and security headers.
 
-**Netlify / GitHub Pages** also work: publish `dist/` after `npm run build`. Both serve `404.html` for
-unknown routes. For a GitHub Pages project site, set `BASE_PATH`.
+**Netlify / GitHub Pages** also work: publish `dist/` after `npm run build`. Both serve `404.html` for unknown
+routes. For a GitHub Pages project site, set `BASE_PATH`.
 
 ## Discoverability (search engines and AI agents)
 
-- `/llms.txt` (also `/llm.txt`): plain-text summary of the site for LLMs, generated from `src/pages/llms.txt.ts`
-- `/sitemap.xml` and `/robots.txt`: generated from `src/lib/pages.ts`; robots explicitly allows AI crawlers
-- JSON-LD on every page (WebSite, WebPage, Person; WebApplication on `/`, ProfilePage on `/about`), in `src/layouts/Base.astro`
-- `/.well-known/security.txt` (and `/security.txt`): security contact per RFC 9116. **Expires 2027-09-27; bump it before then.**
+- `/llms.txt` (also `/llm.txt`): a plain-text summary of the site for LLMs, from `src/pages/llms.txt.ts`
+- `/sitemap.xml` and `/robots.txt`: generated from `src/lib/pages.ts`. Robots explicitly allows AI crawlers.
+- JSON-LD on every page (WebSite, WebPage, Person; WebApplication on `/`, ProfilePage on `/about`)
+- `/.well-known/security.txt` (and `/security.txt`): security contact per RFC 9116.
+  **It expires on 2027-09-27; bump the date before then.**
 
-When you add a page, add it to `src/lib/pages.ts` so it shows up in the sitemap and llms.txt.
+When you add a page, add it to `src/lib/pages.ts` so it appears in the sitemap and llms.txt.
 
 ## Where things are
 
 ```
-reference/city-movement.html   the prototype (source of truth for design)
-src/app/        the interactive app: data, sim, iso, landmarks, map, timebar, rushChart,
+reference/city-movement.html   the original prototype (design reference)
+src/app/        the interactive app: data, sim, iso, landmarks, map, crowd, timebar, rushChart,
                 pieChart, peopleList, addDialog, tooltip, tilt, store, main
-src/lib/        storage, share, cityStats (Supabase), analytics/ (wrapper, adapters, debug panel), site
-src/pages/      index, about, support, privacy, legal, 404
+src/lib/        storage, share, upi, cityStats (Supabase), pages, analytics/ (wrapper, adapters, debug panel)
+src/pages/      index, about, support, privacy, legal, 404, llms.txt, sitemap.xml, robots.txt
+src/components/ layout pieces, ChipIn (UPI), share popover
 src/styles/     tokens, base (chrome, cards, footer, share), app (home), prose (inner pages)
-supabase/       SQL migration
-scripts/        OG image + favicon renderer
+src/assets/     portrait.svg (dot-matrix art on /about)
+supabase/       CLI config and SQL migrations
+scripts/        OG image + favicon renderer, dot-portrait generator
 docs/           analytics.md
 tests/          vitest
 ```
 
-localStorage keys are unchanged from the prototype: `blr-moves-v2` holds the people and `blr-moves-names`
-holds the toggle state. `blr-moves-contrib` is new, created only for people who opt into the stats.
+Your commuters live only in your browser. `blr-moves-v2` holds the list and `blr-moves-names` holds the
+show-names switch, both unchanged from the prototype. `blr-moves-contrib` is a random ID, created only if you
+opt in to the city-wide view, that lets "Clear my data" delete what you shared.
 
-## Legal pages
+## Other notes
 
-`/privacy` and `/legal` are written for an Indian audience (DPDP Act 2023, courts at Bengaluru). The owner
-has reviewed them, but they are not formal legal advice. The privacy page says PostHog discards IP addresses,
-so keep "Discard client IP data" switched on in the PostHog project settings.
-
-Bugs are reported through the GitHub issue form in `.github/ISSUE_TEMPLATE/bug_report.yml`.
+- **Legal pages**: `/privacy` and `/legal` are written for an Indian audience (DPDP Act 2023, courts at
+  Bengaluru). They've been reviewed by the owner but are not formal legal advice.
+- **Chip in**: the UPI box on `/support` builds its QR codes at build time from `SITE.upi` in `src/config.ts`.
+- **Bugs**: reported through the GitHub issue form in `.github/ISSUE_TEMPLATE/bug_report.yml`.

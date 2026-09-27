@@ -1,7 +1,7 @@
 /* Landmark buildings drawn as isometric line art. Artistic interpretations only: no logos or wordmarks. */
 import { NODES, type AreaId } from "./data";
 import { CARD as F1, DARK, AMBER, F2, INK, el, iso, pts, type Pt, type Pt3 } from "./iso";
-import { lerp, seeded } from "./sim";
+import { lerp, rng } from "./sim";
 
 const ST = { stroke: INK, "stroke-width": 1, "stroke-linejoin": "round", "stroke-opacity": .78 };
 const L3 = (a: Pt3, b: Pt3, t: number): Pt3 => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
@@ -54,9 +54,9 @@ function gable(g: Element, gx: number, gy: number, w: number, d: number, h: numb
 export function drawLandmarks(parent: Element) {
   const parts: { k: number; draw: (g: Element) => void }[] = [];
   const add = (k: number, draw: (g: Element) => void) => parts.push({ k, draw });
-  let seed = 1;
+  let n = 1;
   for (const id of Object.keys(NODES) as AreaId[]) {
-    const [gx, gy] = NODES[id].g, rnd = seeded(seed++ * 13);
+    const [gx, gy] = NODES[id].g, rnd = rng(n++ * 13);
     if (id === "electronic") {
       // glass pyramid with a glass wing behind it
       add(gx + gy - 1.8, g => box(g, gx - 1.05, gy - .75, .55, .3, 34, { bands: 7 }));
@@ -98,7 +98,7 @@ export function drawLandmarks(parent: Element) {
         box(g, gx, gy, .36, .36, 118, { lf: "#19191b", rf: "#1c1c1e", fins: [.2, .4, .6, .8], finOp: .25 });
         ln(g, [gx + .36, gy, 78], [gx + .36, gy - .3, 114], .55); ln(g, [gx + .36, gy, 78], [gx + .36, gy + .3, 114], .55);
         box(g, gx, gy, .52, .52, 7, { base: 118 });
-        const r = seeded(21);
+        const r = rng(21);
         for (let i = 0; i < 16; i++) { const p = iso(gx - .46 + r() * .92, gy - .46 + r() * .92, 125); el("circle", { cx: p[0], cy: p[1] - 1.5, r: 1.6 + r() * 1.6, fill: "none", stroke: INK, "stroke-opacity": .45 }, g); }
         box(g, gx - .04, gy - .04, .3, .26, 16, { base: 125, fins: [.1, .25, .4, .55, .7, .85], finOp: .45 });
         box(g, gx - .04, gy - .04, .34, .3, 3, { base: 141 });
