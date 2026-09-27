@@ -13,6 +13,7 @@ export function posthogAdapter(key: string, host: string): Adapter {
       capture_pageview: false,
       capture_pageleave: false,
       disable_session_recording: true,
+      person_profiles: "never", // anonymous events only, no person records
       disable_surveys: true,
       disable_external_dependency_loading: true,
       advanced_disable_flags: true,
