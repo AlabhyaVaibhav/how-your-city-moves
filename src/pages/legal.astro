@@ -12,29 +12,52 @@ import { href } from "../lib/paths";
     <DraftNotice />
 
     <h2><span class="num">01</span>Terms of use</h2>
-    <p>{SITE.name} is a free, personal project offered as is. You're welcome to use it, share it and link to it. Please don't try to break it, overload it, or fill the city-wide stats with fake entries.</p>
-    <p>I may change, pause or take down the site at any time. TODO: add your name or entity as the operator, and your jurisdiction if you want to state one.</p>
+    <p>{SITE.name} is a free, personal, non-commercial project run by {SITE.owner}, an individual based in Bengaluru, Karnataka, India. By using the site you agree to these terms. If you don't agree, please don't use it.</p>
+    <p>You're welcome to use it, share it and link to it. Please don't:</p>
+    <ul>
+      <li>try to break, overload, scrape or attack the site or the services behind it</li>
+      <li>fill the city-wide stats with fake or automated entries</li>
+      <li>use it for anything unlawful</li>
+    </ul>
+    <p>I may change, pause or shut down the site, or any part of it, at any time and without notice.</p>
 
     <h2><span class="num">02</span>Disclaimer</h2>
     <ul>
       <li><strong>Not to scale.</strong> Map positions are stylized. Distances, directions and sizes don't match the real city.</li>
-      <li><strong>Not real traffic data.</strong> Commute times are entered by users. The shared stats are only what visitors chose to submit.</li>
-      <li><strong>Artistic interpretations.</strong> The landmark drawings are loose sketches inspired by places in Bangalore. They show no real logos or wordmarks. This site has no affiliation with, and is not endorsed by, any business, building owner or organisation shown or named.</li>
-      <li><strong>Not for navigation or planning.</strong> Don't use this site to plan a journey, pick a home or office, or make any other decision.</li>
+      <li><strong>Not real traffic data.</strong> Commute times are entered by users. The shared stats are only what visitors chose to submit, and they may be incomplete, unrepresentative or wrong.</li>
+      <li><strong>Artistic interpretations.</strong> The landmark drawings are loose sketches inspired by places in Bengaluru. They show no real logos or wordmarks. This site has no affiliation with, and is not endorsed by, any business, building owner, government body or organisation shown or named.</li>
+      <li><strong>Not for navigation or planning.</strong> Don't use this site to plan a journey, choose a home or job, or make any other decision.</li>
     </ul>
-    <p>To the extent the law allows, the site is provided without warranties of any kind, and I'm not liable for any loss arising from its use. TODO: have this reviewed.</p>
 
-    <h2><span class="num">03</span>Privacy</h2>
-    <p>See the <a href={href("/privacy")}>privacy page</a> for what's stored and measured.</p>
+    <h2><span class="num">03</span>No warranty, limited liability</h2>
+    <p>The site is provided "as is" and "as available", free of charge, without warranties of any kind, express or implied. That includes any warranty that it's accurate, available, error-free or fit for a particular purpose.</p>
+    <p>To the fullest extent allowed by Indian law, I'm not liable for any indirect, incidental or consequential loss, or for loss of data, time, opportunity or profit, arising from your use of the site or your inability to use it. Where liability can't be excluded, my total liability to you is limited to ₹1,000. Nothing in these terms limits any right you have that the law doesn't allow to be limited.</p>
 
-    <h2><span class="num">04</span>Credits</h2>
+    <h2><span class="num">04</span>Your content</h2>
+    <p>The names and commutes you type stay in your own browser (see the <a href={href("/privacy")}>privacy page</a>). If you opt into the city-wide stats, you give me permission to store and show the rounded, anonymous version of your commute as part of the combined totals. You can delete it any time from the privacy page.</p>
+
+    <h2><span class="num">05</span>Chipping in</h2>
+    <p>Payments made through the "Chip in" section are voluntary personal gifts to {SITE.owner}. They aren't a purchase, a subscription or a charitable donation, and you don't receive any goods, services, access or rewards in return. They aren't tax-deductible. The money goes towards running and scaling the site, and the occasional treat for Bailey. UPI transfers can't be reversed through this site. If you sent one by mistake, email me and I'll do my best to sort it out.</p>
+
+    <h2><span class="num">06</span>Ownership and licence</h2>
+    <p>The illustrations, isometric map, text and code of this site are © {new Date().getFullYear()} {SITE.owner}. All rights reserved. The <a href={SITE.repo} rel="noopener">source code is public on GitHub</a> so you can read it, learn from it and report issues. Publishing it doesn't grant a licence to copy or redistribute it. Place and neighbourhood names belong to no one, and any trademarks mentioned belong to their owners.</p>
+
+    <h2><span class="num">07</span>Other services and links</h2>
+    <p>The site relies on Vercel (hosting), Supabase (city-wide stats) and PostHog (anonymous analytics). Their own terms and privacy policies apply to what they do. Links to other websites, such as GitHub, LinkedIn, WhatsApp and X, are provided for convenience. I'm not responsible for their content or practices.</p>
+
+    <h2><span class="num">08</span>Governing law</h2>
+    <p>These terms are governed by the laws of India. Any dispute will be subject to the exclusive jurisdiction of the courts at Bengaluru, Karnataka. If you have a problem, please <a href={`mailto:${SITE.email}`}>email me</a> first. Most things can be sorted out quickly.</p>
+
+    <h2><span class="num">09</span>Credits</h2>
     <ul>
+      <li>Idea, illustrations, isometric map and code: {SITE.owner}.</li>
       <li>Typefaces: <a href="https://vercel.com/font" rel="noopener">Geist and Geist Mono</a> by Vercel, under the SIL Open Font License 1.1, self-hosted via <a href="https://fontsource.org" rel="noopener">Fontsource</a>.</li>
-      <li>Built with <a href="https://astro.build" rel="noopener">Astro</a>. Hosted on <a href="https://vercel.com" rel="noopener">Vercel</a>.</li>
-      <li>City-wide stats stored with <a href="https://supabase.com" rel="noopener">Supabase</a>.</li>
-      <li>Illustrations, isometric map and code: TODO: your name, and a licence if you want to set one.</li>
+      <li>Built with <a href="https://astro.build" rel="noopener">Astro</a>. Hosted on <a href="https://vercel.com" rel="noopener">Vercel</a>. City-wide stats stored with <a href="https://supabase.com" rel="noopener">Supabase</a>. Analytics by <a href="https://posthog.com" rel="noopener">PostHog</a>.</li>
     </ul>
-    <p class="muted">Last updated: TODO: date.</p>
+
+    <h2><span class="num">10</span>Changes and contact</h2>
+    <p>I may update these terms. The date below shows the latest version, and continuing to use the site means you accept it. Questions go to <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.</p>
+    <p class="muted">Last updated: 27 September 2026.</p>
   </PageCard>
 </div>
 </Base>

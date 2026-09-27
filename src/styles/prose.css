@@ -50,3 +50,34 @@
 .prose a.cta{ color:#1e1e20; text-decoration:none; }
 .prose a.cta:hover{ color:#1e1e20; }
 .back{ margin:22px 0 0; }
+
+/* ---------- chip in (UPI) ---------- */
+.chipin{ margin:6px 0 16px; display:grid; gap:16px; }
+.chip-amounts{ border:0; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:8px; }
+.chip-amounts legend{ font-size:13px; color:var(--ink-2); margin-bottom:8px; padding:0; }
+.chip{ position:relative; }
+.chip input{ position:absolute; opacity:0; width:1px; height:1px; }
+.chip span{ display:inline-flex; align-items:center; min-height:44px; padding:0 18px; border-radius:999px; cursor:pointer;
+  box-shadow:inset 0 0 0 1px var(--ink-3); font-family:var(--mono); font-size:14px; color:var(--ink); }
+.chip span:hover{ box-shadow:inset 0 0 0 1px var(--orange); color:var(--orange); }
+.chip input:checked + span{ background:var(--orange); color:#1e1e20; box-shadow:none; }
+.chip input:focus-visible + span{ outline:2px solid var(--orange); outline-offset:2px; }
+.chip-pay{ display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start; }
+.prose .chip-app{ color:#1e1e20; text-decoration:none; }
+.chip-qr{ display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
+.qr svg{ display:block; width:168px; height:168px; border-radius:10px; }
+.qr[hidden]{ display:none; }
+.chip-hint{ margin:0; max-width:24ch; font-size:13px; color:var(--ink-2); }
+.chip-id{ margin:0; font-size:13px; color:var(--ink-2); display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+.chip-copy{ all:unset; cursor:pointer; font-size:13px; color:var(--ink); text-decoration:underline; text-underline-offset:3px; padding:10px 2px; }
+.chip-copy:hover{ color:var(--orange); }
+.chip-copy:focus-visible{ outline:2px solid var(--orange); outline-offset:2px; border-radius:2px; }
+.chip-status{ font-family:var(--mono); font-size:11px; color:var(--orange); }
+/* UPI apps live on phones: on desktop the QR is the way in */
+@media (hover:hover) and (pointer:fine){ .chip-app{ display:none; } }
+
+/* ---------- about: dot portrait ---------- */
+.portrait{ margin:34px 0 0; }
+.portrait .frame{ margin-top:0; padding:14px; }
+.portrait img{ display:block; width:100%; max-width:520px; height:auto; margin:0 auto; }
+.portrait figcaption{ margin-top:10px; display:flex; gap:10px; align-items:baseline; font-size:13px; color:var(--ink-2); }

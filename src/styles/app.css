@@ -183,5 +183,3 @@ dialog.sheet[open]{ animation:pop .22s ease-out; }
 .focus-mode .cm:not(.hl){ opacity:.15; }
 .focus-mode .route:not(.hl){ opacity:.05; }
 #map{ -webkit-user-select:none; user-select:none; }
-.on-touch{ display:none; }
-@media (hover:none){ .on-hover{ display:none; } .on-touch{ display:inline; } }

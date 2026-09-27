@@ -112,3 +112,7 @@ button{ -webkit-tap-highlight-color:transparent; }
 @media (prefers-reduced-motion: reduce){
   .card{ transition:none; }
 }
+
+/* copy that differs between mouse and touch */
+.on-touch{ display:none; }
+@media (hover:none){ .on-hover{ display:none; } .on-touch{ display:inline; } }

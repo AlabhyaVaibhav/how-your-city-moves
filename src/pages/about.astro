@@ -3,21 +3,34 @@ import Base from "../layouts/Base.astro";
 import PageCard from "../components/PageCard.astro";
 import "../styles/prose.css";
 import { href } from "../lib/paths";
+import Brackets from "../components/Brackets.astro";
+import portrait from "../assets/portrait.svg?url";
 ---
-<Base title="About me" description="Who made How Bangalore moves, and why.">
+<Base title="About me" description="Who made How Bangalore moves, and why: an AI-native product manager, an hour-long commute, and a cat named Bailey.">
 <div class="wrap page-wrap">
   <PageCard title="About me" num="005" lede="The person behind the little city.">
     <h2><span class="num">01</span>Who I am</h2>
-    <p>TODO: A couple of sentences about you. What you do, where you're based, what you like building.</p>
+    <p>I'm Alabhya, an AI-native product manager. I love building side quests over the weekend and brainstorming ideas with friends.</p>
+    <p>When I'm not working, I'm mostly looking after my cat, Bailey.</p>
 
     <h2><span class="num">02</span>Why I made this</h2>
-    <p>TODO: Why this exists. The commute you were stuck in, the question you wanted answered, or the drawing you couldn't stop fiddling with.</p>
+    <p>It started as a fun experiment to try with our community. Almost every day, my ride from HSR Layout to Indiranagar takes about an hour each way. I wanted to see whether other people face the same thing, and to understand the wider patterns in how this city travels.</p>
+    <p>And if I switch companies next, maybe this gives me a reference for where not to work. Ha.</p>
 
     <h2><span class="num">03</span>About the data</h2>
     <p>Everything on the map is illustrative. Places are stylized and not to scale, and the commutes are whatever you and other visitors type in, not real traffic data. It's a toy for thinking about how a city breathes, not a map to plan a trip with.</p>
 
     <h2><span class="num">04</span>Say hello</h2>
-    <p>Questions, ideas or bugs go on the <a href={href("/support")}>support page</a>. TODO: add links to your site or socials if you want them here.</p>
+    <p>Questions, ideas or bugs go on the <a href={href("/support")}>support page</a>. You can also find me on <a href="https://www.linkedin.com/in/alabhya-vaibhav" rel="noopener">LinkedIn</a>.</p>
+
+    <figure class="portrait">
+      <div class="frame">
+        <Brackets />
+        <img src={portrait} width="1240" height="1200" loading="lazy" decoding="async"
+          alt="Dot-matrix portrait in orange and cream: Alabhya grinning with a hand raised, and Bailey the cat perched on one shoulder, in front of a wire grid and a glowing bulb." />
+      </div>
+      <figcaption><span class="num">fig. 01</span>Me and Bailey, in dots.</figcaption>
+    </figure>
   </PageCard>
 </div>
 </Base>

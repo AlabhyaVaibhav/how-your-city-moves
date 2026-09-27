@@ -24,6 +24,8 @@ export interface EventMap {
   district_hovered: { area: AreaId };
   rush_view_toggled: { view: "yours" | "everyone" };
   data_cleared: None;
+  /** Intent only: UPI payments happen in the payer's app, so completion can't be seen. */
+  chip_in_clicked: { amount: number; method: "upi_app" | "copy_id" };
   outbound_click: { destination: string };
   share_clicked: { location: ShareLocation };
   share_completed: { method: ShareMethod };

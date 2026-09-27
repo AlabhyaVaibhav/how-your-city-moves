@@ -5,6 +5,7 @@ import DraftNotice from "../components/DraftNotice.astro";
 import "../styles/prose.css";
 import { ANALYTICS, PROVIDER_INFO, SITE, SUPABASE } from "../config";
 import { KEYS } from "../lib/storage";
+import { href } from "../lib/paths";
 
 const provider = ANALYTICS.provider === "none" ? null : PROVIDER_INFO[ANALYTICS.provider];
 const events: [string, string][] = [
@@ -20,6 +21,7 @@ const events: [string, string][] = [
   ["Arriving from a shared link", "how the link was shared"],
   ["Clicking a link to another site", "that site's domain name only"],
   ["Clearing your data", "only that it happened"],
+  ["Pressing a Chip in button", "the amount you picked (₹50, ₹100, ₹150 or ₹500) and whether you opened a UPI app or copied the UPI ID. Not whether you paid."],
 ];
 ---
 <Base title="Privacy" description="What How Bangalore moves stores, what it measures, and how to clear it.">
@@ -27,7 +29,11 @@ const events: [string, string][] = [
   <PageCard title="Privacy" num="007" lede="Short version: what you type stays in your browser. There are no accounts and no cookies.">
     <DraftNotice />
 
-    <h2><span class="num">01</span>What you enter stays on your device</h2>
+    <h2><span class="num">01</span>Who's responsible</h2>
+    <p>{SITE.name} is a personal, non-commercial project run by {SITE.owner} in Bengaluru, India. Write to <a href={`mailto:${SITE.email}`}>{SITE.email}</a> about anything on this page. That address is also the contact for privacy complaints (grievances).</p>
+    <p>The site is built for people in India, mostly in Bengaluru. It's designed to follow India's Digital Personal Data Protection Act, 2023 by avoiding personal data wherever possible.</p>
+
+    <h2><span class="num">02</span>What you enter stays on your device</h2>
     <p>The commuters you add, their names and times, and whether names are shown are saved in your browser's <code>localStorage</code>. They are not sent to me or to anyone else. The keys are:</p>
     <ul>
       <li><code>{KEYS.people}</code>: your list of commuters</li>
@@ -35,8 +41,8 @@ const events: [string, string][] = [
       <li><code>{KEYS.contrib}</code>: a random ID, only created if you opt into city-wide stats (see below)</li>
     </ul>
 
-    <h2 id="city-stats"><span class="num">02</span>City-wide stats (only if you opt in)</h2>
-    <p>When you add yourself there's a checkbox, <strong>off by default</strong>, labelled "Add me to the city-wide stats". If you tick it, this is sent to a database hosted by Supabase:</p>
+    <h2 id="city-stats"><span class="num">03</span>City-wide stats (only if you opt in)</h2>
+    <p>When you add yourself there's a checkbox, <strong>off by default</strong>, labelled "Add me to the city-wide stats". If you tick it, this is sent to a database run by Supabase in Mumbai, India:</p>
     <ul>
       <li>the area you live in and the area you work in, chosen from the fixed list of nine</li>
       <li>when you leave home and when you leave work, rounded to the nearest half hour</li>
@@ -44,12 +50,15 @@ const events: [string, string][] = [
       <li>a random ID created in your browser. It isn't linked to you; it exists so you can delete what you shared.</li>
     </ul>
     <p>Your name, or anything else you type, is <strong>never</strong> sent. Other visitors only see totals: how many people are on the road in each hour, and only once at least five commutes have been shared. Nobody can see individual entries through the site.</p>
-    <p>Like any web server, Supabase may briefly keep technical logs, such as IP addresses, to run and protect its service. See <a href="https://supabase.com/privacy" rel="noopener">Supabase's privacy policy</a>. The database is hosted in Mumbai, India (ap-south-1).</p>
+    <p>Shared commutes are kept until you delete them (see <a href="#clear">Clear your data</a>) or the project shuts down, at which point they're deleted. Like any server, Supabase may briefly keep technical logs, such as IP addresses, to run and protect its service. See <a href="https://supabase.com/privacy" rel="noopener">Supabase's privacy policy</a>.</p>
     {!SUPABASE.enabled && <p class="muted">City-wide stats are not switched on for this deployment right now, so nothing is sent.</p>}
 
-    <h2><span class="num">03</span>Anonymous usage analytics</h2>
+    <h2><span class="num">04</span>Anonymous usage analytics</h2>
     {provider ? (
-      <p>To see which parts of the site get used, I count visits and a few interactions with <a href={provider.policy} rel="noopener">{provider.name}</a>. It's set up without cookies and without anything that identifies you across sites or visits. Read their <a href={provider.policy} rel="noopener">data policy</a>.</p>
+      <>
+        <p>To see which parts of the site get used, I count visits and a few interactions with <a href={provider.policy} rel="noopener">{provider.name}</a>. It runs without cookies and without storing anything in your browser. Each page load gets a fresh random ID, so visits can't be linked together or to you.</p>
+        <p>Along with the events below, {provider.name} receives standard technical details that every browser sends: the page address, the site you came from, browser and operating system, screen size, and an approximate location (country or city) worked out from your IP address. The IP address itself is thrown away, not stored. {provider.name === "PostHog" ? "PostHog processes this data on servers in the United States." : ""} Read their <a href={provider.policy} rel="noopener">data policy</a>.</p>
+      </>
     ) : (
       <p>Usage analytics are not switched on for this deployment right now. If they are turned on, they'll use a cookieless provider (Plausible Analytics, or PostHog in memory-only mode), and this section will name it.</p>
     )}
@@ -61,24 +70,34 @@ const events: [string, string][] = [
       </table>
     </div>
 
-    <h2><span class="num">04</span>No accounts, no cookies</h2>
+    <h2><span class="num">05</span>Hosting</h2>
+    <p>The site is hosted by <a href="https://vercel.com/legal/privacy-policy" rel="noopener">Vercel</a>. Like any web host, Vercel handles your IP address and browser details to deliver pages and protect against abuse, and may keep short-lived server logs. I don't use those logs to track anyone.</p>
+
+    <h2><span class="num">06</span>Chipping in with UPI</h2>
+    <p>If you chip in from the <a href={href("/support#chip-in")}>support page</a>, the payment happens entirely in your UPI app, between your bank and mine. This site never sees your bank details, UPI PIN or whether the payment went through. Like any UPI transfer, I'll see the name and UPI ID your bank shares with the payment. I use that only to keep my own records, and never publish it or add it to the site.</p>
+
+    <h2><span class="num">07</span>No accounts, no cookies</h2>
     <p>There's nothing to sign up for, and this site sets no cookies. Fonts are served from this site, not from Google or another font service.</p>
 
-    <h2 id="clear"><span class="num">05</span>Clear your data</h2>
-    <p>You can clear this site's data in your browser settings (look for "site data" or "website data" for this address). Or press the button below. It:</p>
-    <ol>
-      <li>deletes anything you shared to the city-wide stats from this browser</li>
-      <li>removes all of this site's keys from your browser's storage</li>
-    </ol>
-    <p>The home page will then show the six sample commuters again.</p>
+    <h2><span class="num">08</span>Children</h2>
+    <p>The site isn't aimed at children, and it doesn't knowingly collect personal data from anyone, including people under 18. If you're under 18, please don't type real names into the app, and ask a parent or guardian before opting into city-wide stats.</p>
+
+    <h2 id="clear"><span class="num">09</span>Your rights and clearing your data</h2>
+    <p>Because the site avoids collecting anything that identifies you, there's usually nothing on my side to look up, correct or hand over. Your list lives only on your device, and what you shared can't be traced back to you. You still have every right under India's data protection law. To use them:</p>
+    <ul>
+      <li><strong>Delete</strong>: press the button below. It deletes anything this browser shared to the city-wide stats, then removes all of this site's keys from your browser. You can also clear "site data" for this address in your browser settings.</li>
+      <li><strong>Ask a question, correct something, or complain</strong>: email <a href={`mailto:${SITE.email}`}>{SITE.email}</a>. I'll reply as soon as I can, and within 30 days.</li>
+      <li><strong>Escalate</strong>: if you're not happy with my reply, you can complain to the Data Protection Board of India.</li>
+    </ul>
+    <p>After clearing, the home page shows the six sample commuters again.</p>
     <div class="danger-zone">
       <button class="cta" type="button" id="clearData">Clear my data</button>
       <span class="clear-status" id="clearStatus" role="status" aria-live="polite"></span>
     </div>
 
-    <h2><span class="num">06</span>Changes and contact</h2>
-    <p>If this policy changes, the date below will change too. Questions go to <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.</p>
-    <p class="muted">Last updated: TODO: date.</p>
+    <h2><span class="num">10</span>Changes</h2>
+    <p>If this policy changes, the date below will change too, and anything important will be noted on this page.</p>
+    <p class="muted">Last updated: 27 September 2026.</p>
   </PageCard>
 </div>
 </Base>

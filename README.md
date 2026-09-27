@@ -90,13 +90,11 @@ tests/          vitest
 localStorage keys are unchanged from the prototype: `blr-moves-v2` holds the people and `blr-moves-names`
 holds the toggle state. `blr-moves-contrib` is new, created only for people who opt into the stats.
 
-## TODO placeholders
+## Before relying on the legal pages
 
-Find them all with `grep -rn TODO src`:
+`/privacy` and `/legal` were drafted for an Indian audience (DPDP Act 2023, courts at Bengaluru) but have not
+been reviewed by a lawyer. They show a "Draft" notice from `src/components/DraftNotice.astro`; remove it
+from both pages once they've been reviewed. The privacy page says PostHog discards IP addresses, so keep
+"Discard client IP data" switched on in the PostHog project settings.
 
-- `src/config.ts`: site URL fallback, your name for the copyright line, contact email
-- `src/pages/about.astro`: who you are, why you made this, links
-- `src/pages/support.astro`: contact channels, plans for more areas, bug-report link
-- `src/pages/privacy.astro`: "last updated" date
-- `src/pages/legal.astro`: operator/jurisdiction, liability review, credits, date
-- `src/components/DraftNotice.astro`: remove once /privacy and /legal have been reviewed
+Bugs are reported through the GitHub issue form in `.github/ISSUE_TEMPLATE/bug_report.yml`.

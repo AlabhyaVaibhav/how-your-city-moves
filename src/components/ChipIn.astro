@@ -1,0 +1,67 @@
+---
+/* "Chip in" box: fixed UPI amounts. QR codes are rendered at build time, so the page ships no QR library. */
+import { renderSVG } from "uqr";
+import { SITE } from "../config";
+import { upiLink } from "../lib/upi";
+
+const { id, name, amounts } = SITE.upi;
+const note = "Chip in: How Bangalore moves";
+const options = (id ? amounts : []).map(amount => {
+  const link = upiLink({ id, name, amount, note });
+  const qr = renderSVG(link, { border: 2, ecc: "M", whiteColor: "#ebe5d7", blackColor: "#1e1e20" })
+    .replace("<svg ", `<svg role="img" aria-label="UPI QR code for ₹${amount}" `);
+  return { amount, link, qr };
+});
+const first = options[1] ?? options[0];
+---
+{id && first && (
+  <div class="chipin" data-chipin>
+    <fieldset class="chip-amounts">
+      <legend>Pick an amount</legend>
+      {options.map(o => (
+        <label class="chip">
+          <input type="radio" name="chipAmount" value={o.amount} data-link={o.link} checked={o === first} />
+          <span>₹{o.amount}</span>
+        </label>
+      ))}
+    </fieldset>
+
+    <div class="chip-pay">
+      <a class="cta chip-app" href={first.link} data-chip-app>Pay <span data-chip-label>₹{first.amount}</span> with a UPI app</a>
+      <div class="chip-qr">
+        {options.map(o => <div class="qr" data-qr={o.amount} hidden={o !== first} set:html={o.qr} />)}
+        <p class="chip-hint"><span class="on-hover">Scan with any UPI app: GPay, PhonePe, Paytm or BHIM.</span><span class="on-touch">Or scan this from another phone.</span></p>
+      </div>
+    </div>
+
+    <p class="chip-id">UPI ID <code>{id}</code> <button type="button" class="chip-copy" data-chip-copy>Copy</button><span class="chip-status" role="status" aria-live="polite" data-chip-status></span></p>
+  </div>
+)}
+{!id && <p class="muted">A way to chip in is coming soon.</p>}
+
+<script>
+  import { track } from "../lib/analytics";
+
+  const box = document.querySelector<HTMLElement>("[data-chipin]");
+  if (box) {
+    const app = box.querySelector<HTMLAnchorElement>("[data-chip-app]")!;
+    const label = box.querySelector<HTMLElement>("[data-chip-label]")!;
+    const amount = () => Number(box.querySelector<HTMLInputElement>("input[name=chipAmount]:checked")!.value);
+
+    box.querySelectorAll<HTMLInputElement>("input[name=chipAmount]").forEach(r => r.addEventListener("change", () => {
+      app.href = r.dataset.link!;
+      label.textContent = "₹" + r.value;
+      box.querySelectorAll<HTMLElement>("[data-qr]").forEach(q => { q.hidden = q.dataset.qr !== r.value; });
+    }));
+    app.addEventListener("click", () => track("chip_in_clicked", { amount: amount(), method: "upi_app" }));
+
+    const status = box.querySelector<HTMLElement>("[data-chip-status]")!;
+    box.querySelector("[data-chip-copy]")!.addEventListener("click", async () => {
+      const upiId = box.querySelector("code")!.textContent!;
+      try { await navigator.clipboard.writeText(upiId); status.textContent = "Copied"; }
+      catch { status.textContent = "Select and copy it instead"; }
+      setTimeout(() => { status.textContent = ""; }, 2400);
+      track("chip_in_clicked", { amount: amount(), method: "copy_id" });
+    });
+  }
+</script>

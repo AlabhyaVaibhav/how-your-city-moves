@@ -1,9 +1,12 @@
 ---
 import Base from "../layouts/Base.astro";
 import PageCard from "../components/PageCard.astro";
+import ChipIn from "../components/ChipIn.astro";
 import "../styles/prose.css";
 import { SITE } from "../config";
 import { href } from "../lib/paths";
+const bugIssue = `${SITE.repo}/issues/new?template=bug_report.yml`;
+const ideaIssue = `${SITE.repo}/issues/new`;
 const bugSubject = encodeURIComponent("Bug: How Bangalore moves");
 const bugBody = encodeURIComponent("What happened:\n\nWhat you expected:\n\nSteps to reproduce:\n1.\n2.\n\nDevice and browser:\n");
 ---
@@ -11,9 +14,22 @@ const bugBody = encodeURIComponent("What happened:\n\nWhat you expected:\n\nStep
 <div class="wrap page-wrap">
   <PageCard title="Support" num="006" lede="Stuck, curious, or found something broken? Here's how to reach me.">
     <h2><span class="num">01</span>Get help or give feedback</h2>
-    <p>Email <a href={`mailto:${SITE.email}`}>{SITE.email}</a>. <!-- TODO: confirm the contact address in src/config.ts --> I read everything, and I try to reply within a few days. TODO: add any other channel you want people to use (a form, GitHub issues, a social handle).</p>
+    <p>Email <a href={`mailto:${SITE.email}`}>{SITE.email}</a>. I read everything, and I try to reply within a few days.</p>
+    <ul>
+      <li>Ideas and feature requests: <a href={ideaIssue} rel="noopener">open an issue on GitHub</a></li>
+      <li>Just want to say hi: <a href={SITE.linkedin} rel="noopener">LinkedIn</a></li>
+    </ul>
 
-    <h2><span class="num">02</span>Questions</h2>
+    <h2 id="chip-in"><span class="num">02</span>Chip in</h2>
+    <p>The site is free and has no ads. If you enjoy it, you can chip in with UPI. It goes towards:</p>
+    <ul>
+      <li>keeping the servers running, and scaling them if lots of people show up</li>
+      <li>the occasional treat for Bailey, the cat who supervises every commit</li>
+    </ul>
+    <ChipIn />
+    <p class="muted">This is a voluntary gift to an individual, not a purchase or a charity donation. You don't get anything in return, it isn't tax-deductible, and UPI payments can't be reversed from this site. Please only send what you're happy to give. Payment happens entirely in your UPI app. This site never sees your bank or card details.</p>
+
+    <h2><span class="num">03</span>Questions</h2>
     <div class="faq">
       <details>
         <summary>Where does my commute go when I add myself?</summary>
@@ -29,7 +45,7 @@ const bugBody = encodeURIComponent("What happened:\n\nWhat you expected:\n\nStep
       </details>
       <details>
         <summary>Why doesn't my area appear in the list?</summary>
-        <p>The map only has nine places for now, chosen to make a readable drawing. TODO: say whether you plan to add more, and how people can ask for one.</p>
+        <p>The map only has nine places for now, chosen to keep the drawing readable. I'd like to add more. If yours is missing, <a href={ideaIssue} rel="noopener">request it on GitHub</a> or email me. The most-asked-for areas go in first.</p>
       </details>
       <details>
         <summary>Is this real traffic data?</summary>
@@ -41,16 +57,16 @@ const bugBody = encodeURIComponent("What happened:\n\nWhat you expected:\n\nStep
       </details>
     </div>
 
-    <h2 id="bug"><span class="num">03</span>Report a bug</h2>
-    <p>The most useful reports say:</p>
+    <h2 id="bug"><span class="num">04</span>Report a bug</h2>
+    <p>Bugs are tracked in public on GitHub, so you can see what's known and what's fixed. Issues are public, so please leave out personal details. The most useful reports say:</p>
     <ul>
       <li>what you did, and what happened</li>
       <li>what you expected to happen</li>
       <li>your device and browser (for example "iPhone 13, Safari")</li>
       <li>a screenshot, if you can</li>
     </ul>
-    <p><a class="cta" href={`mailto:${SITE.email}?subject=${bugSubject}&body=${bugBody}`}>Email a bug report</a></p>
-    <p class="muted">TODO: if you'd rather take bug reports on GitHub, link the issues page here.</p>
+    <p><a class="cta" href={bugIssue} rel="noopener">Report a bug on GitHub</a></p>
+    <p class="muted">No GitHub account? <a href={`mailto:${SITE.email}?subject=${bugSubject}&body=${bugBody}`}>Email the bug report</a> instead.</p>
   </PageCard>
 </div>
 </Base>

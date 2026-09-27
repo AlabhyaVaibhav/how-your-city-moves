@@ -4,12 +4,18 @@ const env = import.meta.env;
 export const SITE = {
   name: "How Bangalore moves",
   description: "Tell it when people leave home, where they go, and how long the ride takes. The city steps forward every half hour, all day, on a loop.",
-  // TODO: set PUBLIC_SITE_URL to the production URL so share links and OG tags are absolute.
+  // Absolute base for share links and OG tags. Override with PUBLIC_SITE_URL (e.g. for a custom domain).
   url: (env.PUBLIC_SITE_URL || "https://how-your-city-moves.vercel.app").replace(/\/$/, ""),
-  // TODO: replace with your name as it should appear in the copyright line.
   owner: "Alabhya Vaibhav",
-  // TODO: replace with the address you want people to write to.
-  email: "hello@example.com",
+  email: "alabhya.vaibhav1997+hycm@gmail.com",
+  repo: "https://github.com/AlabhyaVaibhav/how-your-city-moves",
+  linkedin: "https://www.linkedin.com/in/alabhya-vaibhav",
+  /** UPI for the "Chip in" box on /support. Leave `id` empty to hide it. */
+  upi: {
+    id: "alabhya.vaibhav1997-1@okhdfcbank",
+    name: "Alabhya Vaibhav",
+    amounts: [50, 100, 150, 500],
+  },
 };
 
 export type Provider = "plausible" | "posthog" | "none";

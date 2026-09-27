@@ -21,6 +21,7 @@ Area values are ids from the fixed list in `src/app/data.ts`.
 | `district_hovered` | `area` | Neighbourhood tooltip open for 600ms (hover or tap); once per area per page load | `src/app/main.ts` |
 | `rush_view_toggled` | `view` (`"yours"` / `"everyone"`) | Rush hours card toggle (only shown when Supabase stats exist) | `src/app/main.ts` |
 | `data_cleared` | none | "Clear my data" on /privacy | `src/pages/privacy.astro` |
+| `chip_in_clicked` | `amount` (50 / 100 / 150 / 500), `method` (`"upi_app"` / `"copy_id"`) | "Pay with a UPI app" tapped, or UPI ID copied, on /support. Intent only: UPI completion isn't visible to the site | `src/components/ChipIn.astro` |
 | `outbound_click` | `destination` (hostname only, `www.` stripped) | Any link to another host, except share intents | `src/lib/site.ts` |
 | `share_clicked` | `location` (`"map"` / `"footer"`) | Either Share button | `src/lib/share.ts` |
 | `share_completed` | `method` (`"native"` / `"copy"` / `"whatsapp"` / `"x"` / `"linkedin"`) | Native share promise resolved (not cancelled), link copied, or a social option clicked | `src/lib/share.ts` |
