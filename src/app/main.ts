@@ -50,6 +50,7 @@ const list = new PeopleList({
   onRemove: id => { store.remove(id); track("commuter_removed"); },
   onReset: () => { store.reset(); track("sample_reset"); },
   onNamesToggle: visible => track("names_toggled", { visible }),
+  onRouteFocus: route => map.focusRoute(route),
 });
 
 /* ---------- the city: everyone's commutes, with yours drawn on top ---------- */
@@ -66,6 +67,7 @@ async function refreshCity() {
   page.classList.toggle("with-city", !!city);
   map.setCity(!!city);
   timebar.setCity(city ? city.slots.map(s => sum(s.o) + sum(s.b)) : null);
+  list.setCity(city);
   drawRush();
 }
 
@@ -118,6 +120,7 @@ function frame(now: number) {
     pie.draw({ home: crowd.counts.home + mine.counts.home, transit: crowd.counts.transit + mine.counts.transit, office: crowd.counts.office + mine.counts.office });
   } else pie.draw(mine.counts);
   list.update(people, curSnap);
+  if (city) list.updateRoutes(city.slots[Math.floor((clock.base + (e > .5 ? 30 : 0)) / 30) % 48]!);
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);

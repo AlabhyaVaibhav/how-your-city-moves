@@ -72,6 +72,7 @@ export class CityMap {
   private crowdLines = new Map<string, SVGLineElement>();
   private crowdLayer!: SVGGElement;
   private crowdDots: SVGCircleElement[] = [];
+  private focusedRoute: string | null = null;
 
   constructor(private svg: SVGSVGElement, private hooks: MapHooks) {}
 
@@ -178,7 +179,7 @@ export class CityMap {
       const len = Math.hypot(to[0] - from[0], to[1] - from[1]) || 1, nx = -(to[1] - from[1]) / len * 3.5, ny = (to[0] - from[0]) / len * 3.5;
       let line = this.crowdLines.get(key);
       if (!line) {
-        line = el("line", { class: "flow", x1: from[0] + nx, y1: from[1] + ny, x2: to[0] + nx, y2: to[1] + ny, stroke: OR, "stroke-linecap": "round" }, this.crowdLayer);
+        line = el("line", { class: "flow", "data-route": `${x.home}>${x.work}`, x1: from[0] + nx, y1: from[1] + ny, x2: to[0] + nx, y2: to[1] + ny, stroke: OR, "stroke-linecap": "round" }, this.crowdLayer);
         this.crowdLines.set(key, line);
       }
       const k = x.n / maxFlow;
@@ -189,6 +190,7 @@ export class CityMap {
       for (let j = 0; j < count && d < MAX_DOTS; j++, d++) {
         const t = (j + e) / count;
         const dot = this.crowdDots[d]!;
+        dot.classList.toggle("hl", this.focusedRoute === `${x.home}>${x.work}`);
         dot.setAttribute("cx", (from[0] + nx + (to[0] - from[0]) * t).toFixed(1));
         dot.setAttribute("cy", (from[1] + ny + (to[1] - from[1]) * t).toFixed(1));
         dot.setAttribute("opacity", "1");
@@ -206,6 +208,13 @@ export class CityMap {
       this.glows[id].setAttribute("ry", String(Math.round(40 + 35 * k)));
       const t = n ? fmt(n) + " here" : ""; if (this.counts[id].textContent !== t) this.counts[id].textContent = t;
     }
+  }
+
+  /** Highlight one city route ("home>work") on the map, or clear with null. */
+  focusRoute(route: string | null) {
+    this.focusedRoute = route;
+    this.svg.classList.toggle("focus-route", !!route);
+    for (const [key, line] of this.crowdLines) line.classList.toggle("hl", key.startsWith(route + ":"));
   }
 
   focus(people: readonly Person[], id: string | null) {

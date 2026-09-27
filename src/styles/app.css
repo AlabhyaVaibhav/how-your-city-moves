@@ -197,3 +197,21 @@ dialog.sheet[open]{ animation:pop .22s ease-out; }
 .foot .on-everyone{ display:none; }
 .with-city .foot .on-everyone{ display:inline; }
 .with-city .foot .on-yours{ display:none; }
+
+/* ---------- in the city: yours + busiest routes ---------- */
+.list-body{ max-height:420px; overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain; }
+.list-body .people{ max-height:none; overflow:visible; }
+.list-label{ margin:14px 0 4px; font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3t); }
+.list-body > :first-child .list-label, .list-body > .list-label:first-child{ margin-top:0; }
+.routes{ list-style:none; margin:0; padding:0; }
+.routes li{ display:flex; align-items:center; gap:12px; padding:10px 0; border-top:1px solid var(--ink-4); font-size:13px; cursor:default; }
+.routes li:focus-visible{ outline:2px solid var(--orange); outline-offset:-2px; border-radius:4px; }
+.routes .who{ flex:1; min-width:0; }
+.routes .who b{ font-weight:500; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.routes .who span{ display:block; color:var(--ink-3t); font-size:12px; margin-top:2px; }
+.routes .bar{ display:block; height:2px; margin-top:6px; border-radius:2px; background:linear-gradient(var(--orange),var(--orange)) 0 0 / var(--w,0%) 100% no-repeat, var(--ink-4); }
+.routes .st{ font-family:var(--mono); font-size:10.5px; color:var(--ink-3t); white-space:nowrap; }
+.routes li.moving .st{ color:var(--orange); }
+.focus-route .flow:not(.hl){ stroke-opacity:.05 !important; }
+.focus-route .crowd circle:not(.hl){ fill-opacity:.12; stroke-opacity:.12; }
+.focus-route .cm,.focus-route .route{ opacity:.15; }

@@ -43,6 +43,10 @@ export interface CitySlot {
 }
 
 export interface CityView {
+  /** Commutes behind the view. */
+  total: number;
+  /** Commuters per route, keyed "home>work" (routes under 3 omitted). */
+  routes: Record<string, number>;
   /** People on the road in each hour (rush-hours chart). */
   hours: number[];
   /** 48 half-hour slots from 00:00. */

@@ -85,7 +85,14 @@ const app = {
     <article class="card list-card">
       <div class="card-head"><h2>In the city</h2><span class="num" aria-hidden="true">004</span></div>
       <div class="list-head"><span id="countNote"></span><label class="switch"><input type="checkbox" id="showNames" checked /><i></i><span>Show names</span></label></div>
-      <ul class="people" id="people" aria-label="Commuters"></ul>
+      <div class="list-body">
+        <div id="routesBox" hidden>
+          <p class="list-label">Busiest routes</p>
+          <ul class="routes" id="routes" aria-label="Busiest routes across the city"></ul>
+        </div>
+        <p class="list-label" id="yoursLabel" hidden>Yours</p>
+        <ul class="people" id="people" aria-label="Your commuters"></ul>
+      </div>
       <button class="resetlink" id="reset" type="button">Reset to sample commuters</button>
     </article>
   </section>
