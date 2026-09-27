@@ -97,6 +97,6 @@ Find them all with `grep -rn TODO src`:
 - `src/config.ts`: site URL fallback, your name for the copyright line, contact email
 - `src/pages/about.astro`: who you are, why you made this, links
 - `src/pages/support.astro`: contact channels, plans for more areas, bug-report link
-- `src/pages/privacy.astro`: Supabase region, "last updated" date
+- `src/pages/privacy.astro`: "last updated" date
 - `src/pages/legal.astro`: operator/jurisdiction, liability review, credits, date
 - `src/components/DraftNotice.astro`: remove once /privacy and /legal have been reviewed
