@@ -24,7 +24,7 @@ export class Timebar {
   private scrub = $<HTMLInputElement>("scrub");
   private speed = $<HTMLInputElement>("speed");
   private slots: string[][] = [];
-  /** Everyone mode: people on the road per half hour (no names). */
+  /** City-wide people on the road per half hour (no names). */
   private cityCounts: number[] | null = null;
   private densEls: HTMLElement[] = [];
   private lastSlot = -1;
@@ -56,8 +56,11 @@ export class Timebar {
       html: e => {
         const r = track.getBoundingClientRect(), i = Math.max(0, Math.min(47, Math.floor((e.clientX - r.left) / r.width * 48)));
         const head = `<b>${hhmm(i * 30)} to ${hhmm(i * 30 + 30)}</b>`;
-        if (this.cityCounts) { const c = this.cityCounts[i] ?? 0; return head + (c ? c.toLocaleString("en-IN") + " on the road" : "quiet roads"); }
         const n = this.slots[i] ?? [];
+        if (this.cityCounts) {
+          const c = (this.cityCounts[i] ?? 0) + n.length;
+          return head + (c ? c.toLocaleString("en-IN") + " on the road" + (n.length ? ", incl. " + n.map(esc).join(", ") : "") : "quiet roads");
+        }
         return head + (n.length ? n.length + " on the road: " + n.map(esc).join(", ") : "quiet roads");
       },
     });
@@ -71,13 +74,17 @@ export class Timebar {
 
   setPeople(people: readonly Person[]) {
     this.slots = onRoad(people, 48);
-    if (!this.cityCounts) this.drawDensity(this.slots.map(x => x.length));
+    this.redraw();
   }
 
-  /** Everyone mode: draw the strip from city-wide counts; pass null to go back to your own list. */
+  /** City-wide on-the-road counts per half hour (yours are added on top); null for yours only. */
   setCity(counts: number[] | null) {
     this.cityCounts = counts;
-    this.drawDensity(counts ?? this.slots.map(x => x.length));
+    this.redraw();
+  }
+
+  private redraw() {
+    this.drawDensity(this.slots.map((x, i) => x.length + (this.cityCounts?.[i] ?? 0)));
   }
 
   private drawDensity(counts: number[]) {

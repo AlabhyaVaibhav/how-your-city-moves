@@ -46,10 +46,6 @@ const app = {
     <article class="card map-card" data-tilt="1.2">
       <div class="card-head"><h2>The city, right now</h2>
         <div class="head-r">
-          <div class="seg" id="viewSeg" role="group" aria-label="Whose commutes to show" hidden>
-            <button type="button" data-v="yours" aria-pressed="true">Yours</button>
-            <button type="button" data-v="everyone" aria-pressed="false">Everyone</button>
-          </div>
           <button class="cta" id="openAdd" type="button"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Add yourself</button>
           <button class="pill" type="button" data-share="map"><ShareIcon />Share</button>
           <span class="num" aria-hidden="true">001</span>
@@ -59,7 +55,7 @@ const app = {
         <Brackets />
         <svg id="map" viewBox="0 0 1200 640" role="img" aria-label="Isometric map of Bangalore landmarks with commuters moving between them"></svg>
       </div>
-      <div class="foot"><span class="on-yours"><span class="on-hover">Hover a neighbourhood to see who's there, or a name in the list to follow one person.</span><span class="on-touch">Tap a neighbourhood to see who's there, or a name in the list to follow one person.</span></span><span class="on-everyone">The whole city on the move. <span class="on-hover">Hover</span><span class="on-touch">Tap</span> a neighbourhood to see how many people are there.</span></div>
+      <div class="foot"><span class="on-yours"><span class="on-hover">Hover a neighbourhood to see who's there, or a name in the list to follow one person.</span><span class="on-touch">Tap a neighbourhood to see who's there, or a name in the list to follow one person.</span></span><span class="on-everyone">The whole city on the move, with your commuters in cream. <span class="on-hover">Hover</span><span class="on-touch">Tap</span> a neighbourhood to see who's there, or a name in the list to follow one person.</span></div>
     </article>
 
     <article class="card" data-tilt="5">

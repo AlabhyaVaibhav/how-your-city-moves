@@ -130,7 +130,7 @@ export class CityMap {
     }
   }
 
-  /** Place every dot between snapshots A and B at eased progress e; returns counts for the pie. */
+  /** Place every dot between snapshots A and B at eased progress e; returns counts and per-area occupancy. */
   update(people: readonly Person[], A: Snapshot, B: Snapshot, e: number, now: Snapshot) {
     const counts = { home: 0, transit: 0, office: 0 }, occ: Partial<Record<AreaId, number>> = {};
     const ds = this.compact ? COMPACT_DOT : 1;
@@ -153,15 +153,17 @@ export class CityMap {
       this.glows[id].setAttribute("rx", "100"); this.glows[id].setAttribute("ry", "58");
       const t = n ? n + " here" : ""; if (this.counts[id].textContent !== t) this.counts[id].textContent = t;
     }
-    return counts;
+    return { counts, occ };
   }
 
-  setMode(mode: "yours" | "everyone") {
-    this.svg.classList.toggle("mode-everyone", mode === "everyone");
+  /** Show the city-wide layer under your own commuters. */
+  setCity(on: boolean) {
+    this.svg.classList.toggle("with-city", on);
   }
 
   /** Everyone mode: thicken and animate routes by traffic, stream dots along them, scale area glows. */
-  updateCrowd(f: CrowdFrame, e: number) {
+  /** `mine` is where your own commuters are, added to the area counts. */
+  updateCrowd(f: CrowdFrame, e: number, mine: Partial<Record<AreaId, number>> = {}) {
     const ds = this.compact ? COMPACT_DOT : 1;
     const maxFlow = Math.max(1, ...f.flows.map(x => x.n));
     const onRoad = f.flows.reduce((a, x) => a + x.n, 0);
@@ -195,9 +197,10 @@ export class CityMap {
     for (; d < MAX_DOTS; d++) this.crowdDots[d]!.setAttribute("opacity", "0");
     for (const [key, line] of this.crowdLines) if (!seen.has(key)) line.setAttribute("stroke-opacity", "0");
 
-    const maxOcc = Math.max(1, ...Object.values(f.occ));
+    const occ = (id: AreaId) => (f.occ[id] ?? 0) + (mine[id] ?? 0);
+    const maxOcc = Math.max(1, ...(Object.keys(NODES) as AreaId[]).map(occ));
     for (const id of Object.keys(NODES) as AreaId[]) {
-      const n = f.occ[id] ?? 0, k = Math.sqrt(n / maxOcc);
+      const n = occ(id), k = Math.sqrt(n / maxOcc);
       this.glows[id].setAttribute("opacity", n ? (.25 + .75 * k).toFixed(2) : "0");
       this.glows[id].setAttribute("rx", String(Math.round(70 + 60 * k)));
       this.glows[id].setAttribute("ry", String(Math.round(40 + 35 * k)));
@@ -214,10 +217,14 @@ export class CityMap {
   }
 }
 
-export function crowdDistrictHtml(id: AreaId, f: CrowdFrame | null, atHome: number, atWork: number) {
-  if (!f) return `<b>${NODES[id].label}</b>`;
-  const parts = [atHome && fmt(atHome) + " at home", atWork && fmt(atWork) + " at work"].filter(Boolean);
-  return `<b>${NODES[id].label}</b>${parts.length ? parts.join("<br>") : "quiet right now"}`;
+/** Tooltip with the city: totals at home / at work, then your own commuters who are there by name. */
+export function cityDistrictHtml(id: AreaId, atHome: number, atWork: number, people: readonly Person[], snap: Snapshot) {
+  const mine = people.filter(p => snap[p.id]?.node === id);
+  const home = atHome + mine.filter(p => snap[p.id]!.s === "home").length;
+  const work = atWork + mine.filter(p => snap[p.id]!.s === "office").length;
+  const parts = [home && fmt(home) + " at home", work && fmt(work) + " at work"].filter(Boolean);
+  const yours = mine.length ? `<br>incl. ${mine.map(p => esc(p.name)).join(", ")}` : "";
+  return `<b>${NODES[id].label}</b>${parts.length ? parts.join("<br>") + yours : "quiet right now"}`;
 }
 
 export function districtHtml(id: AreaId, people: readonly Person[], snap: Snapshot) {

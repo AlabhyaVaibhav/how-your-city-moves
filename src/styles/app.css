@@ -184,14 +184,16 @@ dialog.sheet[open]{ animation:pop .22s ease-out; }
 .focus-mode .route:not(.hl){ opacity:.05; }
 #map{ -webkit-user-select:none; user-select:none; }
 
-/* ---------- everyone mode on the map ---------- */
+/* ---------- the city layer, under your own commuters ---------- */
 .crowd{ display:none; }
-.mode-everyone .crowd{ display:inline; }
-.mode-everyone .cm,.mode-everyone .route{ display:none; }
+.with-city .crowd{ display:inline; }
 .flow{ stroke-dasharray:2 7; animation:flow 1.4s linear infinite; transition:stroke-opacity .4s; }
 @keyframes flow{ to{ stroke-dashoffset:-18; } }
 @media (prefers-reduced-motion: reduce){ .flow{ animation:none; } }
+/* your commuters stand out from the crowd: cream dots, lifted above it */
+.with-city .cm circle + circle{ fill:var(--ink); }
+.with-city .route{ stroke:var(--ink) !important; }
+.focus-mode .crowd{ opacity:.25; }
 .foot .on-everyone{ display:none; }
-.city-everyone .foot .on-everyone{ display:inline; }
-.city-everyone .foot .on-yours{ display:none; }
-.noscript{ margin:0 0 18px; padding:12px 14px; border-radius:10px; box-shadow:inset 0 0 0 1px var(--ink-4); color:var(--ink-2); font-size:14px; line-height:1.5; }
+.with-city .foot .on-everyone{ display:inline; }
+.with-city .foot .on-yours{ display:none; }
