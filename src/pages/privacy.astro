@@ -1,7 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
 import PageCard from "../components/PageCard.astro";
-import DraftNotice from "../components/DraftNotice.astro";
 import "../styles/prose.css";
 import { ANALYTICS, PROVIDER_INFO, SITE, SUPABASE } from "../config";
 import { KEYS } from "../lib/storage";
@@ -27,7 +26,6 @@ const events: [string, string][] = [
 <Base title="Privacy" description="What How Bangalore moves stores, what it measures, and how to clear it.">
 <div class="wrap page-wrap">
   <PageCard title="Privacy" num="007" lede="Short version: what you type stays in your browser. There are no accounts and no cookies.">
-    <DraftNotice />
 
     <h2><span class="num">01</span>Who's responsible</h2>
     <p>{SITE.name} is a personal, non-commercial project run by {SITE.owner} in Bengaluru, India. Write to <a href={`mailto:${SITE.email}`}>{SITE.email}</a> about anything on this page. That address is also the contact for privacy complaints (grievances).</p>

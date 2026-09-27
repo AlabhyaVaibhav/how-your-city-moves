@@ -1,7 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
 import PageCard from "../components/PageCard.astro";
-import DraftNotice from "../components/DraftNotice.astro";
 import "../styles/prose.css";
 import { SITE } from "../config";
 import { href } from "../lib/paths";
@@ -9,7 +8,6 @@ import { href } from "../lib/paths";
 <Base title="Legal" description="Terms of use, disclaimer and credits for How Bangalore moves.">
 <div class="wrap page-wrap">
   <PageCard title="Legal" num="008" lede="Terms of use, a disclaimer, and credits.">
-    <DraftNotice />
 
     <h2><span class="num">01</span>Terms of use</h2>
     <p>{SITE.name} is a free, personal, non-commercial project run by {SITE.owner}, an individual based in Bengaluru, Karnataka, India. By using the site you agree to these terms. If you don't agree, please don't use it.</p>

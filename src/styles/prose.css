@@ -31,9 +31,6 @@
 .table-scroll{ overflow-x:auto; margin:0 0 16px; }
 .table-scroll table{ margin:0; min-width:460px; }
 
-.draft{ display:flex; gap:12px; align-items:flex-start; margin:0 0 22px; padding:12px 14px; border-radius:10px;
-  background:rgba(240,122,68,.1); box-shadow:inset 0 0 0 1px rgba(240,122,68,.4); color:var(--ink); font-size:14px; line-height:1.5; }
-.draft b{ color:var(--orange); font-family:var(--mono); font-size:11px; font-weight:500; letter-spacing:.04em; text-transform:uppercase; padding-top:2px; flex:none; }
 
 .faq details{ border-top:1px solid var(--ink-4); padding:4px 0; }
 .faq details:last-child{ border-bottom:1px solid var(--ink-4); }

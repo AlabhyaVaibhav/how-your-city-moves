@@ -90,11 +90,10 @@ tests/          vitest
 localStorage keys are unchanged from the prototype: `blr-moves-v2` holds the people and `blr-moves-names`
 holds the toggle state. `blr-moves-contrib` is new, created only for people who opt into the stats.
 
-## Before relying on the legal pages
+## Legal pages
 
-`/privacy` and `/legal` were drafted for an Indian audience (DPDP Act 2023, courts at Bengaluru) but have not
-been reviewed by a lawyer. They show a "Draft" notice from `src/components/DraftNotice.astro`; remove it
-from both pages once they've been reviewed. The privacy page says PostHog discards IP addresses, so keep
-"Discard client IP data" switched on in the PostHog project settings.
+`/privacy` and `/legal` are written for an Indian audience (DPDP Act 2023, courts at Bengaluru). The owner
+has reviewed them, but they are not formal legal advice. The privacy page says PostHog discards IP addresses,
+so keep "Discard client IP data" switched on in the PostHog project settings.
 
 Bugs are reported through the GitHub issue form in `.github/ISSUE_TEMPLATE/bug_report.yml`.
