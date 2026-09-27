@@ -13,7 +13,7 @@ export class RushChart {
 
   constructor(private svg: SVGSVGElement, private foot: HTMLElement) {}
 
-  build(hourly: HourBucket[], scope: "yours" | "everyone", total?: number) {
+  build(hourly: HourBucket[], scope: "yours" | "everyone") {
     const bars = this.svg;
     bars.replaceChildren(); this.tops = [];
     radial(el("defs", {}, bars), "bg", .6);
@@ -47,14 +47,14 @@ export class RushChart {
         html: () => {
           const b = hourly[h]!;
           const who = b.names ? ": " + b.names.map(esc).join(", ") : "";
-          return `<b>${hourName(h)} to ${hourName((h + 1) % 24)}</b>${b.n ? b.n + " on the road" + who : "quiet roads"}`;
+          return `<b>${hourName(h)} to ${hourName((h + 1) % 24)}</b>${b.n ? b.n.toLocaleString("en-IN") + " on the road" + who : "quiet roads"}`;
         },
       });
     }
     let pk = 0; hourly.forEach((a, i) => { if (a.n > hourly[pk]!.n) pk = i; });
     const n = hourly[pk]!.n;
     if (scope === "everyone") {
-      this.foot.innerHTML = `Across <strong>${total ?? 0}</strong> shared commutes, the busiest stretch starts at <strong>${hourName(pk)}</strong>.`;
+      this.foot.innerHTML = `Across the city, the busiest stretch starts at <strong>${hourName(pk)}</strong>.`;
     } else {
       this.foot.innerHTML = n
         ? `Busiest stretch starts at <strong>${hourName(pk)}</strong>, with ${n} ${n === 1 ? "person" : "people"} on the road.`

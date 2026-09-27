@@ -27,7 +27,7 @@ export class PieChart {
     const key = JSON.stringify(counts) + active;
     if (key === this.key) return; this.key = key;
     for (const b of this.buttons) {
-      b.querySelector("b")!.textContent = String(counts[b.dataset.k as Status]);
+      b.querySelector("b")!.textContent = counts[b.dataset.k as Status].toLocaleString("en-IN");
       b.classList.toggle("on", b.dataset.k === active && total > 0);
     }
     const pie = this.svg;

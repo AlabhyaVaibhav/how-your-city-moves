@@ -1,7 +1,8 @@
 /* Home page entry: wires the store, the clock and every view together. */
 import type { AreaId } from "./data";
 import { Clock, commuteBucket, ease, onRoad, snapshot, speedBucket, type Snapshot } from "./sim";
-import { CityMap, districtHtml } from "./map";
+import { CityMap, crowdDistrictHtml, districtHtml } from "./map";
+import { crowdAt, type CrowdFrame } from "./crowd";
 import { Timebar } from "./timebar";
 import { RushChart } from "./rushChart";
 import { PieChart } from "./pieChart";
@@ -10,7 +11,7 @@ import { initAddDialog } from "./addDialog";
 import { initTilt } from "./tilt";
 import { store } from "./store";
 import { once, track } from "../lib/analytics";
-import { fetchCityRush, submitCommute, type CityRush } from "../lib/cityStats";
+import { fetchCityView, submitCommute, type CityView } from "../lib/cityStats";
 import { SUPABASE } from "../config";
 
 const $ = <T extends Element>(id: string) => document.getElementById(id) as unknown as T;
@@ -19,11 +20,18 @@ const compact = matchMedia("(max-width: 640px)");
 
 const clock = new Clock(!reduce);
 let curSnap: Snapshot = {};
+let crowd: CrowdFrame | null = null;
+let mode: "yours" | "everyone" = "yours";
+let city: CityView | null = null;
 
 /* ---------- views ---------- */
 let hoverTimer = 0;
 const map = new CityMap($("map"), {
-  districtHtml: id => districtHtml(id, store.people, curSnap),
+  districtHtml: id => {
+    if (mode !== "everyone" || !city) return districtHtml(id, store.people, curSnap);
+    const slot = city.slots[Math.floor(clock.base / 30) % 48]!;
+    return crowdDistrictHtml(id, crowd, slot.h[id] ?? 0, slot.w[id] ?? 0);
+  },
   // count a district only after 600ms of hover, once per area per page load
   onDistrictShow: (id: AreaId) => {
     clearTimeout(hoverTimer);
@@ -46,31 +54,34 @@ const list = new PeopleList({
   onNamesToggle: visible => track("names_toggled", { visible }),
 });
 
-/* ---------- rush hours: yours vs everyone ---------- */
-let rushView: "yours" | "everyone" = "yours";
-let city: CityRush | null = null;
-const seg = $<HTMLElement>("rushSeg");
+/* ---------- yours vs everyone: one switch for the map, rush hours and pie ---------- */
+const seg = $<HTMLElement>("viewSeg");
+const page = document.querySelector<HTMLElement>(".grid")!;
 
 function drawRush() {
-  if (rushView === "everyone" && city) rush.build(city.hours.map(n => ({ n })), "everyone", city.total);
+  if (mode === "everyone" && city) rush.build(city.hours.map(n => ({ n })), "everyone");
   else rush.build(onRoad(store.people, 24).map(names => ({ n: names.length, names })), "yours");
 }
-function setRushView(v: typeof rushView) {
-  rushView = v;
+function setMode(v: typeof mode) {
+  mode = v;
   seg.querySelectorAll<HTMLButtonElement>("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === v)));
+  page.classList.toggle("city-everyone", v === "everyone");
+  map.setMode(v);
+  timebar.setCity(v === "everyone" && city ? city.slots.map(s => Object.values(s.o).concat(Object.values(s.b)).reduce((a, b) => a + b, 0)) : null);
+  if (v === "everyone") map.focus(store.people, null);
   drawRush();
 }
 seg.querySelectorAll<HTMLButtonElement>("button").forEach(b => b.addEventListener("click", () => {
-  const v = b.dataset.v as typeof rushView;
-  if (v === rushView) return;
-  setRushView(v);
-  track("rush_view_toggled", { view: v });
+  const v = b.dataset.v as typeof mode;
+  if (v === mode) return;
+  setMode(v);
+  track("city_view_toggled", { view: v });
 }));
 async function refreshCity() {
-  city = await fetchCityRush();
+  city = await fetchCityView();
   seg.hidden = !city;
-  if (!city && rushView === "everyone") setRushView("yours");
-  else if (rushView === "everyone") drawRush();
+  if (!city && mode === "everyone") setMode("yours");
+  else if (mode === "everyone") drawRush();
 }
 
 /* ---------- rebuild on every change to the list ---------- */
@@ -94,6 +105,7 @@ initAddDialog({
       home_area: person.home, work_area: person.office, commute_bucket: commuteBucket(person.mins),
       used_random_name: usedRandomName, shared_to_city: shareToCity,
     });
+    if (mode === "everyone") setMode("yours");
     focus(added.id);
     setTimeout(() => focus(null), 2600);
     if (shareToCity) submitCommute(person).then(refreshCity).catch(() => { /* stats are best-effort */ });
@@ -115,7 +127,12 @@ function frame(now: number) {
   curSnap = e > .5 ? B : A;
   timebar.draw();
   rush.markHour(Math.floor(clock.minute / 60) % 24);
-  pie.draw(map.update(people, A, B, e, curSnap));
+  const mine = map.update(people, A, B, e, curSnap);
+  if (mode === "everyone" && city) {
+    crowd = crowdAt(city, clock.base, e);
+    map.updateCrowd(crowd, e);
+    pie.draw(crowd.counts);
+  } else pie.draw(mine);
   list.update(people, curSnap);
   requestAnimationFrame(frame);
 }

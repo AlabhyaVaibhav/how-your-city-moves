@@ -24,6 +24,8 @@ export class Timebar {
   private scrub = $<HTMLInputElement>("scrub");
   private speed = $<HTMLInputElement>("speed");
   private slots: string[][] = [];
+  /** Everyone mode: people on the road per half hour (no names). */
+  private cityCounts: number[] | null = null;
   private densEls: HTMLElement[] = [];
   private lastSlot = -1;
   private lastDay = -1;
@@ -53,8 +55,10 @@ export class Timebar {
       live: true,
       html: e => {
         const r = track.getBoundingClientRect(), i = Math.max(0, Math.min(47, Math.floor((e.clientX - r.left) / r.width * 48)));
+        const head = `<b>${hhmm(i * 30)} to ${hhmm(i * 30 + 30)}</b>`;
+        if (this.cityCounts) { const c = this.cityCounts[i] ?? 0; return head + (c ? c.toLocaleString("en-IN") + " on the road" : "quiet roads"); }
         const n = this.slots[i] ?? [];
-        return `<b>${hhmm(i * 30)} to ${hhmm(i * 30 + 30)}</b>${n.length ? n.length + " on the road: " + n.map(esc).join(", ") : "quiet roads"}`;
+        return head + (n.length ? n.length + " on the road: " + n.map(esc).join(", ") : "quiet roads");
       },
     });
   }
@@ -67,10 +71,20 @@ export class Timebar {
 
   setPeople(people: readonly Person[]) {
     this.slots = onRoad(people, 48);
-    const max = Math.max(1, ...this.slots.map(x => x.length));
-    this.densEls = this.slots.map(x => {
+    if (!this.cityCounts) this.drawDensity(this.slots.map(x => x.length));
+  }
+
+  /** Everyone mode: draw the strip from city-wide counts; pass null to go back to your own list. */
+  setCity(counts: number[] | null) {
+    this.cityCounts = counts;
+    this.drawDensity(counts ?? this.slots.map(x => x.length));
+  }
+
+  private drawDensity(counts: number[]) {
+    const max = Math.max(1, ...counts);
+    this.densEls = counts.map(n => {
       const i = document.createElement("i");
-      i.style.height = (x.length ? 12 + x.length / max * 88 : 0) + "%";
+      i.style.height = (n ? 12 + n / max * 88 : 0) + "%";
       return i;
     });
     this.densityEl.replaceChildren(...this.densEls);

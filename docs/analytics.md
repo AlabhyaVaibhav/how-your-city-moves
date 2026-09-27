@@ -19,7 +19,7 @@ Area values are ids from the fixed list in `src/app/data.ts`.
 | `speed_changed` | `speed_bucket` (`"slow"` / `"normal"` / `"fast"`, thirds of the slider) | Speed slider released | `src/app/main.ts` |
 | `names_toggled` | `visible` (bool) | "Show names" switch | `src/app/main.ts` |
 | `district_hovered` | `area` | Neighbourhood tooltip open for 600ms (hover or tap); once per area per page load | `src/app/main.ts` |
-| `rush_view_toggled` | `view` (`"yours"` / `"everyone"`) | Rush hours card toggle (only shown when Supabase stats exist) | `src/app/main.ts` |
+| `city_view_toggled` | `view` (`"yours"` / `"everyone"`) | Yours / Everyone switch on the map card (shown only when city data exists); drives the map, rush hours and pie | `src/app/main.ts` |
 | `data_cleared` | none | "Clear my data" on /privacy | `src/pages/privacy.astro` |
 | `chip_in_clicked` | `amount` (50 / 100 / 150 / 500), `method` (`"upi_app"` / `"copy_id"`) | "Pay with a UPI app" tapped, or UPI ID copied, on /support. Intent only: UPI completion isn't visible to the site | `src/components/ChipIn.astro` |
 | `outbound_click` | `destination` (hostname only, `www.` stripped) | Any link to another host, except share intents | `src/lib/site.ts` |

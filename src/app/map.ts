@@ -4,6 +4,11 @@ import { CARD, INK, K, OR, dust, el, iso, radial } from "./iso";
 import { drawLandmarks } from "./landmarks";
 import { lerp, seeded, type Snapshot } from "./sim";
 import { bindTip, esc } from "./tooltip";
+import type { CrowdFrame } from "./crowd";
+
+/** Everyone mode: at most this many moving dots, each standing in for a group of people. */
+const MAX_DOTS = 90;
+const fmt = (n: number) => Math.round(n).toLocaleString("en-IN");
 
 export const VIEW_FULL = { x: 0, y: 0, w: 1200, h: 640 };
 /** Phones: crop to the landmarks and scale up text/dots so they stay readable. */
@@ -64,6 +69,9 @@ export class CityMap {
   private routes: Record<string, SVGLineElement> = {};
   private dots: Record<string, Dot> = {};
   private compact = false;
+  private crowdLines = new Map<string, SVGLineElement>();
+  private crowdLayer!: SVGGElement;
+  private crowdDots: SVGCircleElement[] = [];
 
   constructor(private svg: SVGSVGElement, private hooks: MapHooks) {}
 
@@ -88,6 +96,10 @@ export class CityMap {
       this.routes[p.id] = el("line", { class: "route", x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: INK, "stroke-opacity": .1, "stroke-width": 1.2, "stroke-dasharray": "3 5" }, routes);
     }
 
+    // everyone mode: one line per route and direction, created on first use
+    this.crowdLayer = el("g", { class: "crowd" }, svg);
+    this.crowdLines.clear();
+
     drawLandmarks(svg);
     this.counts = drawLabels(svg, compact);
 
@@ -101,6 +113,10 @@ export class CityMap {
       el("title", {}, g).textContent = p.name;
       this.dots[p.id] = { g, halo, core };
     }
+
+    const crowdDotsG = el("g", { class: "crowd" }, svg);
+    this.crowdDots = Array.from({ length: MAX_DOTS }, () =>
+      el("circle", { r: 3.2 * ds, fill: OR, stroke: CARD, "stroke-width": 1.2 * ds, opacity: 0 }, crowdDotsG));
 
     const hz = el("g", {}, svg);
     for (const id of Object.keys(NODES) as AreaId[]) {
@@ -134,9 +150,59 @@ export class CityMap {
     for (const id of Object.keys(NODES) as AreaId[]) {
       const n = occ[id] ?? 0;
       this.glows[id].setAttribute("opacity", n ? String(Math.min(1, .35 + n * .18)) : "0");
+      this.glows[id].setAttribute("rx", "100"); this.glows[id].setAttribute("ry", "58");
       const t = n ? n + " here" : ""; if (this.counts[id].textContent !== t) this.counts[id].textContent = t;
     }
     return counts;
+  }
+
+  setMode(mode: "yours" | "everyone") {
+    this.svg.classList.toggle("mode-everyone", mode === "everyone");
+  }
+
+  /** Everyone mode: thicken and animate routes by traffic, stream dots along them, scale area glows. */
+  updateCrowd(f: CrowdFrame, e: number) {
+    const ds = this.compact ? COMPACT_DOT : 1;
+    const maxFlow = Math.max(1, ...f.flows.map(x => x.n));
+    const onRoad = f.flows.reduce((a, x) => a + x.n, 0);
+    const perDot = Math.max(1, onRoad / MAX_DOTS);
+    const seen = new Set<string>();
+    let d = 0;
+    for (const x of f.flows) {
+      const key = `${x.home}>${x.work}:${x.dir}`;
+      seen.add(key);
+      const from = iso(...NODES[x.dir === 1 ? x.home : x.work].g), to = iso(...NODES[x.dir === 1 ? x.work : x.home].g);
+      // nudge each direction to its own side of the road
+      const len = Math.hypot(to[0] - from[0], to[1] - from[1]) || 1, nx = -(to[1] - from[1]) / len * 3.5, ny = (to[0] - from[0]) / len * 3.5;
+      let line = this.crowdLines.get(key);
+      if (!line) {
+        line = el("line", { class: "flow", x1: from[0] + nx, y1: from[1] + ny, x2: to[0] + nx, y2: to[1] + ny, stroke: OR, "stroke-linecap": "round" }, this.crowdLayer);
+        this.crowdLines.set(key, line);
+      }
+      const k = x.n / maxFlow;
+      line.setAttribute("stroke-width", ((1 + 4.5 * Math.sqrt(k)) * ds).toFixed(2));
+      line.setAttribute("stroke-opacity", (.2 + .6 * k).toFixed(2));
+      // dots: one per `perDot` people, evenly spaced, sliding one gap per half hour
+      const count = Math.min(14, Math.round(x.n / perDot));
+      for (let j = 0; j < count && d < MAX_DOTS; j++, d++) {
+        const t = (j + e) / count;
+        const dot = this.crowdDots[d]!;
+        dot.setAttribute("cx", (from[0] + nx + (to[0] - from[0]) * t).toFixed(1));
+        dot.setAttribute("cy", (from[1] + ny + (to[1] - from[1]) * t).toFixed(1));
+        dot.setAttribute("opacity", "1");
+      }
+    }
+    for (; d < MAX_DOTS; d++) this.crowdDots[d]!.setAttribute("opacity", "0");
+    for (const [key, line] of this.crowdLines) if (!seen.has(key)) line.setAttribute("stroke-opacity", "0");
+
+    const maxOcc = Math.max(1, ...Object.values(f.occ));
+    for (const id of Object.keys(NODES) as AreaId[]) {
+      const n = f.occ[id] ?? 0, k = Math.sqrt(n / maxOcc);
+      this.glows[id].setAttribute("opacity", n ? (.25 + .75 * k).toFixed(2) : "0");
+      this.glows[id].setAttribute("rx", String(Math.round(70 + 60 * k)));
+      this.glows[id].setAttribute("ry", String(Math.round(40 + 35 * k)));
+      const t = n ? fmt(n) + " here" : ""; if (this.counts[id].textContent !== t) this.counts[id].textContent = t;
+    }
   }
 
   focus(people: readonly Person[], id: string | null) {
@@ -146,6 +212,12 @@ export class CityMap {
       this.routes[p.id]?.classList.toggle("hl", p.id === id);
     }
   }
+}
+
+export function crowdDistrictHtml(id: AreaId, f: CrowdFrame | null, atHome: number, atWork: number) {
+  if (!f) return `<b>${NODES[id].label}</b>`;
+  const parts = [atHome && fmt(atHome) + " at home", atWork && fmt(atWork) + " at work"].filter(Boolean);
+  return `<b>${NODES[id].label}</b>${parts.length ? parts.join("<br>") : "quiet right now"}`;
 }
 
 export function districtHtml(id: AreaId, people: readonly Person[], snap: Snapshot) {

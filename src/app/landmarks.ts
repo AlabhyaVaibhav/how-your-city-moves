@@ -147,6 +147,11 @@ export function drawLandmarks(parent: Element) {
         isoCircle(g, cx, cy, .1, 0, { "stroke-opacity": .7 });
       });
       add(cx + cy + .3, g => box(g, cx - .8, cy + .8, .26, .26, 66, { bands: 7 }));
+    } else if (id === "kalyannagar") {
+      // low apartment blocks around a courtyard, with trees
+      ([[-.55, -.35, .26, 26], [.35, -.5, .22, 34], [-.2, .45, .3, 18], [.6, .35, .2, 22]] as const).forEach(([dx, dy, s, h]) =>
+        add(gx + gy + dx + dy, g => box(g, gx + dx, gy + dy, s, s * .8, h, { bands: 8 })));
+      add(gx + gy + 1.4, g => { palm(g, gx + .95, gy + .9, 26); palm(g, gx - .9, gy + .85, 20); });
     } else if (id === "marathahalli") {
       ([[-.45, .55, .24, .42], [0, 0, .34, 1], [.62, .35, .26, .58]] as const).forEach(([dx, dy, s, hf]) =>
         add(gx + gy + dx + dy, g => box(g, gx + dx, gy + dy, s, s, 66 * hf, { bands: 11 })));

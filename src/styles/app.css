@@ -183,3 +183,15 @@ dialog.sheet[open]{ animation:pop .22s ease-out; }
 .focus-mode .cm:not(.hl){ opacity:.15; }
 .focus-mode .route:not(.hl){ opacity:.05; }
 #map{ -webkit-user-select:none; user-select:none; }
+
+/* ---------- everyone mode on the map ---------- */
+.crowd{ display:none; }
+.mode-everyone .crowd{ display:inline; }
+.mode-everyone .cm,.mode-everyone .route{ display:none; }
+.flow{ stroke-dasharray:2 7; animation:flow 1.4s linear infinite; transition:stroke-opacity .4s; }
+@keyframes flow{ to{ stroke-dashoffset:-18; } }
+@media (prefers-reduced-motion: reduce){ .flow{ animation:none; } }
+.foot .on-everyone{ display:none; }
+.city-everyone .foot .on-everyone{ display:inline; }
+.city-everyone .foot .on-yours{ display:none; }
+.noscript{ margin:0 0 18px; padding:12px 14px; border-radius:10px; box-shadow:inset 0 0 0 1px var(--ink-4); color:var(--ink-2); font-size:14px; line-height:1.5; }

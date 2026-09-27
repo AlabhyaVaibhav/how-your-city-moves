@@ -1,0 +1,9 @@
+# Security contact for How Bangalore moves (RFC 9116)
+Contact: mailto:alabhya.vaibhav1997+hycm@gmail.com
+Expires: 2027-09-27T00:00:00.000Z
+Preferred-Languages: en, hi
+Canonical: https://www.howyourcitymoves.fyi/.well-known/security.txt
+Policy: https://www.howyourcitymoves.fyi/support#bug
+
+# Please report vulnerabilities privately by email rather than as a public GitHub issue.
+# This is a small personal project with no bug bounty, but every report is read and credited if you like.

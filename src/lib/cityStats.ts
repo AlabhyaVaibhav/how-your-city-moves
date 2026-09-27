@@ -5,7 +5,7 @@
  * All access goes through RPCs; the table itself is closed to the browser (see supabase/migrations).
  */
 import { SUPABASE } from "../config";
-import type { Person } from "../app/data";
+import type { AreaId, Person } from "../app/data";
 import { ensureContribToken, getContribToken } from "./storage";
 
 async function rpc<T>(fn: string, body: Record<string, unknown> = {}): Promise<T> {
@@ -32,14 +32,29 @@ export async function submitCommute(p: Omit<Person, "id">) {
   });
 }
 
-export interface CityRush { total: number; hours: number[] }
+type Counts = Partial<Record<AreaId, number>>;
 
-/** Null when stats are disabled, unreachable, or there aren't enough submissions yet. */
-export async function fetchCityRush(): Promise<CityRush | null> {
+/** One half-hour of the city. Route keys are "home>work"; counts under 3 are omitted. */
+export interface CitySlot {
+  /** At home, by home area. */ h: Counts;
+  /** At work, by work area. */ w: Counts;
+  /** Heading to work, by route. */ o: Record<string, number>;
+  /** Heading home, by route. */ b: Record<string, number>;
+}
+
+export interface CityView {
+  /** People on the road in each hour (rush-hours chart). */
+  hours: number[];
+  /** 48 half-hour slots from 00:00. */
+  slots: CitySlot[];
+}
+
+/** Null when stats are disabled, unreachable, or there isn't enough data yet. */
+export async function fetchCityView(): Promise<CityView | null> {
   if (!SUPABASE.enabled) return null;
   try {
-    const r = await rpc<CityRush | null>("city_rush_hours");
-    return r && Array.isArray(r.hours) && r.hours.length === 24 ? r : null;
+    const r = await rpc<CityView | null>("city_view");
+    return r && Array.isArray(r.hours) && r.hours.length === 24 && Array.isArray(r.slots) && r.slots.length === 48 ? r : null;
   } catch { return null; }
 }
 

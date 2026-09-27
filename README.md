@@ -59,10 +59,19 @@ Every event, its props, and where it fires are listed in [`docs/analytics.md`](d
 The table is closed to the browser (RLS on, no grants). The site can only call three functions:
 
 - `submit_commute`: validates, rounds and rate-limits a submission
-- `city_rush_hours`: returns 24 hourly counts, and only once at least 5 commutes exist
+- `city_rush_hours_v2`: returns 24 hourly counts plus `shared` / `simulated` flags, once at least 5 rows exist
+  (`city_rush_hours` is the older, real-only version)
 - `forget_my_commutes`: deletes this browser's rows for "Clear my data"
 
 No names are stored. Leave the variables empty and the opt-in checkbox and the "Everyone" toggle stay hidden.
+
+**Simulated baseline.** Migration `20260927020100_seed_simulated_baseline.sql` adds ~4,000 generated commutes
+(`is_seed = true`) following typical Bengaluru patterns. `city_rush_hours_v2()` includes them until 200 real
+commutes have been shared, then shows real data only, and the site labels them as simulated. To remove them:
+
+```sql
+delete from public.commutes where is_seed;
+```
 
 ## Deploy
 
@@ -71,6 +80,15 @@ clean URLs, cache headers for hashed assets, and security headers. Remember the 
 
 **Netlify / GitHub Pages** also work: publish `dist/` after `npm run build`. Both serve `404.html` for
 unknown routes. For a GitHub Pages project site, set `BASE_PATH`.
+
+## Discoverability (search engines and AI agents)
+
+- `/llms.txt` (also `/llm.txt`): plain-text summary of the site for LLMs, generated from `src/pages/llms.txt.ts`
+- `/sitemap.xml` and `/robots.txt`: generated from `src/lib/pages.ts`; robots explicitly allows AI crawlers
+- JSON-LD on every page (WebSite, WebPage, Person; WebApplication on `/`, ProfilePage on `/about`), in `src/layouts/Base.astro`
+- `/.well-known/security.txt` (and `/security.txt`): security contact per RFC 9116. **Expires 2027-09-27; bump it before then.**
+
+When you add a page, add it to `src/lib/pages.ts` so it shows up in the sitemap and llms.txt.
 
 ## Where things are
 
