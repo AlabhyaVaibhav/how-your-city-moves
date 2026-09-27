@@ -45,7 +45,7 @@ so shared visits appear under Sources → `share`.
 - **plausible** (default): loads Plausible's manual script from `PUBLIC_PLAUSIBLE_SRC`; pageviews are
   sent by `page()` so they always come before `shared_visit` and the URL cleanup.
 - **posthog**: `posthog-js` is lazy-loaded and set up cookieless (`persistence: 'memory'`, no
-  autocapture, no session recording, no pageleave, no surveys, no remote config).
+  autocapture, no session recording, no pageleave, no surveys, no remote config, `person_profiles: "never"`). Turn on "Discard client IP data" in the PostHog project settings.
 - **none**, or missing keys: console only.
 
 To add a provider, write an adapter in `src/lib/analytics/` that implements `{ page(url), track(event, props) }`
