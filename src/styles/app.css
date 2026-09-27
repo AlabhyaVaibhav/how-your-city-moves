@@ -105,7 +105,7 @@ input[type=range]::-moz-range-thumb{ width:12px; height:12px; border-radius:50%;
 .switch input:focus-visible + i{ outline:2px solid var(--orange); outline-offset:2px; }
 .people.hide-names .who b{ display:none; }
 .people.hide-names .who span{ margin-top:0; color:var(--ink-2); }
-.people{ list-style:none; margin:0; padding:0; max-height:330px; overflow:auto; overscroll-behavior:contain; }
+.people{ list-style:none; margin:0; padding:0; max-height:330px; overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain; }
 .people li{ display:flex; align-items:center; gap:12px; padding:10px 0; border-top:1px solid var(--ink-4); font-size:13px; }
 .people li:focus-visible{ outline:2px solid var(--orange); outline-offset:-2px; border-radius:4px; }
 .people .who{ flex:1; min-width:0; }
