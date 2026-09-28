@@ -14,7 +14,7 @@ const events: [string, string][] = [
   ["Opening or closing the Add yourself dialog without adding", "only that it happened"],
   ["Play, pause, dragging the timeline, changing speed", "play or pause, the hour you dragged to (0 to 23), and slow, normal or fast"],
   ["Showing or hiding names", "on or off"],
-  ["Looking at a neighbourhood", "which of the ten areas, once per visit"],
+  ["Looking at a neighbourhood", "which of the twenty areas, once per visit"],
   ["Sharing", "where you pressed Share (map or footer) and how you shared (share sheet, copy, WhatsApp, X, LinkedIn)"],
   ["Arriving from a shared link", "how the link was shared"],
   ["Clicking a link to another site", "that site's domain name only"],
@@ -41,7 +41,7 @@ const events: [string, string][] = [
     <h2 id="city-stats"><span class="num">03</span>City-wide stats (only if you opt in)</h2>
     <p>When you add yourself there's a checkbox, <strong>off by default</strong>, labelled "Add me to the city-wide stats". If you tick it, this is sent to a database run by Supabase in Mumbai, India:</p>
     <ul>
-      <li>the area you live in and the area you work in, chosen from the fixed list of ten</li>
+      <li>the area you live in and the area you work in, chosen from the fixed list of twenty</li>
       <li>when you leave home and when you leave work, rounded to the nearest half hour</li>
       <li>your commute length, rounded to the nearest 5 minutes</li>
       <li>a random ID created in your browser. It isn't linked to you; it exists so you can delete what you shared.</li>

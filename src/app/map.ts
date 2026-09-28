@@ -10,27 +10,29 @@ import type { CrowdFrame } from "./crowd";
 const MAX_DOTS = 90;
 const fmt = (n: number) => Math.round(n).toLocaleString("en-IN");
 
-export const VIEW_FULL = { x: 0, y: 0, w: 1200, h: 640 };
+export const VIEW_FULL = { x: 0, y: 10, w: 1200, h: 770 };
 /** Phones: crop to the landmarks and scale up text/dots so they stay readable. */
-export const VIEW_COMPACT = { x: 150, y: 20, w: 900, h: 640 };
-const COMPACT_TEXT = 2.1, COMPACT_DOT = 1.6;
+export const VIEW_COMPACT = { x: 90, y: 30, w: 1090, h: 780 };
+const COMPACT_TEXT = 2.5, COMPACT_DOT = 1.8;
 /** Nudges for compact labels that would otherwise collide once enlarged. */
 const COMPACT_NUDGE: Partial<Record<AreaId, [number, number]>> = {
   whitefield: [30, -8], marathahalli: [-16, 30], indiranagar: [26, -10], koramangala: [-24, 4], jpnagar: [8, 0],
+  jayanagar: [-34, -6], dobaspet: [24, 0], chandapura: [20, 0], krpuram: [-10, 0], varthur: [-10, 0],
 };
 
 export interface SceneOpts { compact?: boolean; people?: readonly Person[] }
 
 /** Dust, dot grid, dashed rings. Shared with the OG image script. */
 export function drawBackdrop(svg: Element) {
-  const r = rng(7);
-  dust(el("g", { opacity: .5 }, svg), r, 120, 1200, 640, () => r() < .85 ? .7 : 1.2, .25, .4);
+  const r = rng(7), v = VIEW_FULL;
+  const d = el("g", { opacity: .5, transform: `translate(${v.x} ${v.y})` }, svg);
+  dust(d, r, 140, v.w, v.h, () => r() < .85 ? .7 : 1.2, .25, .4);
   const grid = el("g", {}, svg);
-  for (let gx = -3; gx <= 15; gx++) for (let gy = -5; gy <= 15; gy++) {
-    const [x, y] = iso(gx, gy); if (x < 10 || x > 1190 || y < 10 || y > 630) continue;
+  for (let gx = -8; gx <= 20; gx++) for (let gy = -5; gy <= 20; gy++) {
+    const [x, y] = iso(gx, gy); if (x < v.x + 10 || x > v.x + v.w - 10 || y < v.y + 10 || y > v.y + v.h - 10) continue;
     el("circle", { cx: x, cy: y, r: .9, fill: INK, opacity: .16 }, grid);
   }
-  const c = iso(5.5, 5);
+  const c = iso(5.5, 5.5);
   [3, 5.6].forEach((rr, i) => el("ellipse", { cx: c[0], cy: c[1], rx: rr * K * 1.2247, ry: rr * K * .7071, fill: "none", stroke: INK, "stroke-opacity": .16, "stroke-dasharray": i ? "2 7" : "4 6" }, svg));
 }
 

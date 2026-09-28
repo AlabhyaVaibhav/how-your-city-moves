@@ -24,7 +24,8 @@ function fillSelects(home: HTMLSelectElement, office: HTMLSelectElement) {
     const groups = i === 0 ? [["home", "Neighbourhoods"], ["office", "Work hubs"]] : [["office", "Work hubs"], ["home", "Neighbourhoods"]];
     for (const [k, l] of groups) {
       const og = document.createElement("optgroup"); og.label = l!;
-      for (const id of Object.keys(NODES) as AreaId[]) if (NODES[id].kind === k) og.appendChild(new Option(NODES[id].label, id));
+      const ids = (Object.keys(NODES) as AreaId[]).filter(id => NODES[id].kind === k).sort((a, b) => NODES[a].label.localeCompare(NODES[b].label));
+      for (const id of ids) og.appendChild(new Option(NODES[id].label, id));
       s.appendChild(og);
     }
   });

@@ -5,7 +5,7 @@ long the ride takes, and the city steps forward every half hour on a 24-hour loo
 
 Live at **https://www.howyourcitymoves.fyi**
 
-- **The city, right now**: hand-drawn isometric landmarks for ten areas. City-wide traffic flows along the
+- **The city, right now**: hand-drawn isometric landmarks for twenty areas. City-wide traffic flows along the
   routes, and your own commuters are drawn on top in cream.
 - **Rush hours**: people on the road in each hour.
 - **Where everyone is**: at home, on the road, at work, updating with the clock.
