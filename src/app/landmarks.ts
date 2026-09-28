@@ -1,7 +1,8 @@
 /* Landmark buildings drawn as isometric line art. Artistic interpretations only: no logos or wordmarks. */
 import { NODES, type AreaId } from "./data";
-import { CARD as F1, DARK, AMBER, F2, INK, el, iso, pts, type Pt, type Pt3 } from "./iso";
+import { CARD as F1, DARK, AMBER, F2, INK, K, el, iso, pts, type Pt, type Pt3 } from "./iso";
 import { lerp, rng } from "./sim";
+import { LANDMARKS } from "./landmarks/index";
 
 const ST = { stroke: INK, "stroke-width": 1, "stroke-linejoin": "round", "stroke-opacity": .78 };
 const L3 = (a: Pt3, b: Pt3, t: number): Pt3 => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
@@ -71,14 +72,38 @@ function sawtooth(g: Element, gx: number, gy: number, w: number, d: number, h: n
   }
 }
 
+/** Dome of height `h` px over a circle of radius `r` (grid units), with ribs and a finial. */
+function dome(g: Element, cx: number, cy: number, r: number, h: number, base = 0) {
+  const [x, y] = iso(cx, cy, base), rx = r * K * 1.2247, ry = r * K * .7071, top = y - h;
+  el("path", { d: `M${x - rx},${y} A${rx},${h} 0 0 1 ${x + rx},${y} A${rx},${ry} 0 0 1 ${x - rx},${y}Z`, fill: F1, ...ST }, g);
+  [-.55, .55].forEach(f => el("path", { d: `M${x + f * rx},${y + ry * Math.sqrt(1 - f * f)} Q${x + f * rx * 1.05},${top + h * .15} ${x},${top}`, fill: "none", stroke: INK, "stroke-opacity": .3 }, g));
+  el("line", { x1: x, y1: y + ry, x2: x, y2: top, stroke: INK, "stroke-opacity": .3 }, g);
+  el("line", { x1: x, y1: top, x2: x, y2: top - 8, stroke: INK, "stroke-opacity": .78 }, g);
+}
+
+/**
+ * The drawing kit a landmark module gets: queue parts with `add(depth, g => ...)` and draw them with the
+ * helpers above. The iso-landmark skill's portable iso-kit.mjs has the same names and signatures.
+ */
+export const makeKit = (add: (k: number, draw: (g: Element) => void) => void) => ({
+  add, poly, ln, box, isoCircle, palm, gable, tank, sawtooth, dome, L3, lerp, rng, iso, INK, F1, F2, DARK, AMBER, K,
+});
+export type Kit = ReturnType<typeof makeKit>;
+/** A landmark module's drawing, centred on grid point (gx, gy). */
+export type DrawLandmark = (k: Kit, gx: number, gy: number) => void;
+
 /** Draw every landmark into a new <g> under `parent`, back to front. */
 export function drawLandmarks(parent: Element) {
   const parts: { k: number; draw: (g: Element) => void }[] = [];
   const add = (k: number, draw: (g: Element) => void) => parts.push({ k, draw });
+  const kit = makeKit(add);
   let n = 1;
   for (const id of Object.keys(NODES) as AreaId[]) {
-    const [gx, gy] = NODES[id].g, rnd = rng(n++ * 13);
-    if (id === "electronic") {
+    const [gx, gy] = NODES[id].g, rnd = rng(n++ * 13), own = LANDMARKS[id];
+    if (own) {
+      // one file per landmark in ./landmarks, made with the iso-landmark skill
+      own(kit, gx, gy);
+    } else if (id === "electronic") {
       // glass pyramid with a glass wing behind it
       add(gx + gy - 1.8, g => box(g, gx - 1.05, gy - .75, .55, .3, 34, { bands: 7 }));
       add(gx + gy - .01, g => {
