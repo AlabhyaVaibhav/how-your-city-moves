@@ -1,8 +1,9 @@
 /*
- * Renders public/og.png (1200×630) from the real map drawing code, plus the favicon set.
+ * Renders public/og.png (1200×630) and the README banner docs/banner.png (1600×560) from the real map
+ * drawing code, plus the favicon set.
  * Run with `npm run assets` after changing the map, landmarks or mark. Output is committed.
  */
-import { writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { parseHTML } from "linkedom";
 import { Resvg } from "@resvg/resvg-js";
@@ -18,6 +19,7 @@ const fontFiles = [
 ].map(f => join(fontDir, f));
 
 const out = (f: string) => join(import.meta.dirname, "../public", f);
+const docs = (f: string) => join(import.meta.dirname, "../docs", f);
 
 function png(svg: string, width: number) {
   return new Resvg(svg, {
@@ -37,24 +39,27 @@ root.setAttribute("width", String(W)); root.setAttribute("height", String(H));
 root.setAttribute("viewBox", `0 0 ${W} ${H}`);
 root.innerHTML = `<rect width="${W}" height="${H}" fill="${CARD}"/>`;
 
-// the map, shifted right so the title has room top-left
-const mapG = document.createElementNS(NS, "g");
-mapG.setAttribute("transform", "translate(425 40) scale(.65)");
-root.appendChild(mapG);
-const mapSvg = document.createElementNS(NS, "svg");
-mapSvg.setAttribute("width", "1200"); mapSvg.setAttribute("height", "640");
-mapSvg.setAttribute("overflow", "visible");
-mapG.appendChild(mapSvg);
+/** The map at 09:15, mid-rush with several people on the road, drawn into `parent` at `transform`. */
+function drawMap(parent: Element, transform: string) {
+  const mapG = document.createElementNS(NS, "g");
+  mapG.setAttribute("transform", transform);
+  parent.appendChild(mapG);
+  const mapSvg = document.createElementNS(NS, "svg");
+  mapSvg.setAttribute("width", "1200"); mapSvg.setAttribute("height", "640");
+  mapSvg.setAttribute("overflow", "visible");
+  mapG.appendChild(mapSvg);
+  const people = SAMPLE.map((p, i) => ({ ...p, id: "s" + i }));
+  const map = new CityMap(mapSvg as unknown as SVGSVGElement, { districtHtml: () => "" });
+  map.build(people, false);
+  mapSvg.removeAttribute("viewBox");
+  const t = 540, prog = .5, A = snapshot(people, t), B = snapshot(people, t + 30);
+  map.update(people, A, B, ease(prog), ease(prog) > .5 ? B : A);
+  // drop the invisible hover zones
+  mapSvg.lastElementChild?.remove();
+}
 
-const people = SAMPLE.map((p, i) => ({ ...p, id: "s" + i }));
-const map = new CityMap(mapSvg as unknown as SVGSVGElement, { districtHtml: () => "" });
-map.build(people, false);
-mapSvg.removeAttribute("viewBox");
-// 09:15, mid-rush: several people on the road
-const t = 540, prog = .5, A = snapshot(people, t), B = snapshot(people, t + 30);
-map.update(people, A, B, ease(prog), ease(prog) > .5 ? B : A);
-// drop the invisible hover zones
-mapSvg.lastElementChild?.remove();
+// the map, shifted right so the title has room top-left
+drawMap(root, "translate(425 40) scale(.65)");
 
 const bracket = (x: number, y: number, dx: number, dy: number) =>
   `<path d="M${x} ${y + dy * 22} V${y} H${x + dx * 22}" fill="none" stroke="${INK}" stroke-opacity=".62" stroke-width="2"/>`;
@@ -71,6 +76,30 @@ const overlay = [
 
 writeFileSync(out("og.png"), png(root.outerHTML.replace(/<\/svg>$/, overlay + "</svg>"), W));
 console.log("wrote public/og.png");
+
+/* ---------- README banner: title on the left, the whole map on the right ---------- */
+const BW = 1600, BH = 560;
+const banner = document.createElementNS(NS, "svg");
+banner.setAttribute("xmlns", NS);
+banner.setAttribute("width", String(BW)); banner.setAttribute("height", String(BH));
+banner.setAttribute("viewBox", `0 0 ${BW} ${BH}`);
+banner.innerHTML = `<rect width="${BW}" height="${BH}" fill="${CARD}"/>`;
+// the map's drawing spans y 10–780 of its frame; scale it to the banner's height, right-aligned
+drawMap(banner, "translate(715 12) scale(.67)");
+const bracketB = (x: number, y: number, dx: number, dy: number) =>
+  `<path d="M${x} ${y + dy * 24} V${y} H${x + dx * 24}" fill="none" stroke="${INK}" stroke-opacity=".62" stroke-width="2"/>`;
+const bannerText = [
+  bracketB(36, 36, 1, 1), bracketB(BW - 36, 36, -1, 1), bracketB(36, BH - 36, 1, -1), bracketB(BW - 36, BH - 36, -1, -1),
+  `<text x="96" y="196" font-family="Geist" font-weight="600" font-size="72" letter-spacing="-2" fill="${INK}">How Bangalore</text>`,
+  `<text x="96" y="276" font-family="Geist" font-weight="600" font-size="72" letter-spacing="-2" fill="${INK}">moves</text>`,
+  `<text x="96" y="334" font-family="Geist" font-size="25" fill="${INK}" fill-opacity=".62">Watch Bengaluru commute across twenty</text>`,
+  `<text x="96" y="368" font-family="Geist" font-size="25" fill="${INK}" fill-opacity=".62">neighbourhoods, half an hour at a time.</text>`,
+  `<circle cx="104" cy="${BH - 110}" r="6" fill="${OR}"/>`,
+  `<text x="122" y="${BH - 103}" font-family="Geist Mono" font-size="20" fill="${OR}">howyourcitymoves.fyi</text>`,
+].join("");
+mkdirSync(docs(""), { recursive: true });
+writeFileSync(docs("banner.png"), png(banner.outerHTML.replace(/<\/svg>$/, bannerText + "</svg>"), BW));
+console.log("wrote docs/banner.png");
 
 /* ---------- favicons: isometric block, orange on charcoal ---------- */
 const mark = (bg: "round" | "square" | "none") => `<svg xmlns="${NS}" viewBox="0 0 32 32">${
