@@ -1,3 +1,5 @@
+![How Bangalore moves: an isometric line-art map of Bengaluru with commuters moving between twenty neighbourhoods](docs/banner.png)
+
 # How Bangalore moves
 
 An interactive isometric map of how Bengaluru commutes. Add when people leave home, where they go and how
