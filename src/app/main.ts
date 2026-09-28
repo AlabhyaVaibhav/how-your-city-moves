@@ -1,7 +1,7 @@
 /* Home page entry: wires the store, the clock and every view together. */
 import type { AreaId } from "./data";
 import { Clock, commuteBucket, ease, onRoad, snapshot, speedBucket, type Snapshot } from "./sim";
-import { CityMap, cityDistrictHtml, districtHtml } from "./map";
+import { CityMap, cityDistrictHtml, districtHtml, type MapView } from "./map";
 import { crowdAt } from "./crowd";
 import { Timebar } from "./timebar";
 import { RushChart } from "./rushChart";
@@ -81,6 +81,26 @@ function rebuild() {
 }
 store.subscribe(rebuild);
 compact.addEventListener("change", () => map.build(store.people, compact.matches));
+
+/* ---------- isometric drawing or the real, to-scale map ---------- */
+const viewBtn = $<HTMLButtonElement>("realMap"), mapSvg = $<SVGSVGElement>("map");
+const LABELS: Record<MapView, string> = {
+  iso: "Isometric map of Bangalore landmarks with commuters moving between them",
+  real: "To-scale map of Bengaluru with main roads, the Outer Ring Road and lakes, and commuters moving between neighbourhoods",
+};
+viewBtn.addEventListener("click", async () => {
+  const view: MapView = viewBtn.getAttribute("aria-pressed") === "true" ? "iso" : "real";
+  viewBtn.disabled = true;
+  try {
+    // the map's line art (~60 KB) only loads when someone asks for it
+    if (view === "real") map.setBasemap((await import("./basemap.json")).default);
+  } catch { /* still usable without the roads: markers and routes are drawn from coordinates */ }
+  viewBtn.disabled = false;
+  viewBtn.setAttribute("aria-pressed", String(view === "real"));
+  mapSvg.setAttribute("aria-label", LABELS[view]);
+  map.build(store.people, compact.matches, view);
+  track("map_view_changed", { view });
+});
 
 initAddDialog({
   taken: () => store.people,

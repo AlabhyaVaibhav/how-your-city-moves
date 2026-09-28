@@ -2,6 +2,7 @@
 import { NODES, type AreaId, type Person } from "./data";
 import type { CitySlot, CityView } from "../lib/cityStats";
 import { hhmm, type Snapshot } from "./sim";
+import { distanceShort } from "./geo";
 import { loadShowNames, saveShowNames } from "../lib/storage";
 
 export interface ListHooks {
@@ -54,7 +55,7 @@ export class PeopleList {
       li.tabIndex = 0;
       li.innerHTML = `<div class="who"><b></b><span></span><i class="bar"></i></div><span class="st"></span>`;
       li.querySelector("b")!.textContent = `${NODES[home].label} → ${NODES[work].label}`;
-      li.querySelector(".who span")!.textContent = `${fmt(n)} ${n === 1 ? "person" : "people"}`;
+      li.querySelector(".who span")!.textContent = `${fmt(n)} ${n === 1 ? "person" : "people"} · ${distanceShort(home, work)}`;
       li.querySelector<HTMLElement>(".bar")!.style.setProperty("--w", (n / max * 100).toFixed(1) + "%");
       const on = () => this.hooks.onRouteFocus?.(key), off = () => this.hooks.onRouteFocus?.(null);
       li.addEventListener("pointerenter", e => { if (e.pointerType === "mouse") on(); });
@@ -80,7 +81,7 @@ export class PeopleList {
       li.tabIndex = 0;
       li.innerHTML = `<div class="who"><b></b><span></span></div><span class="st"></span><button class="x" type="button">×</button>`;
       li.querySelector("b")!.textContent = p.name;
-      li.querySelector(".who span")!.textContent = `${NODES[p.home].label} to ${NODES[p.office].label}, out ${hhmm(p.out)}, back ${hhmm(p.back)}`;
+      li.querySelector(".who span")!.textContent = `${NODES[p.home].label} to ${NODES[p.office].label} · ${distanceShort(p.home, p.office)}, out ${hhmm(p.out)}, back ${hhmm(p.back)}`;
       const x = li.querySelector<HTMLButtonElement>(".x")!;
       x.setAttribute("aria-label", "Remove " + p.name);
       x.addEventListener("click", e => { e.stopPropagation(); this.hooks.onRemove(p.id); });

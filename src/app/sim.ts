@@ -22,7 +22,15 @@ export function statusAt(p: Person, t: number): { s: Status; f?: number; dir?: 1
   return { s: "home" };
 }
 
-export interface Placement { s: Status; gx: number; gy: number; node?: AreaId }
+/**
+ * Where a person is drawn. `gx, gy` is the isometric grid position; the other fields let the
+ * to-scale map place them too: on the road, `f` of the way `from` → `to`; at an area, offset `ox, oy`
+ * (unit circle) from its centre.
+ */
+export interface Placement {
+  s: Status; gx: number; gy: number; node?: AreaId;
+  from?: AreaId; to?: AreaId; f?: number; ox?: number; oy?: number;
+}
 export type Snapshot = Record<string, Placement>;
 
 export function snapshot(people: readonly Person[], t: number): Snapshot {
@@ -32,7 +40,7 @@ export function snapshot(people: readonly Person[], t: number): Snapshot {
     if (st.s === "transit") {
       const a = NODES[p.home].g, b = NODES[p.office].g;
       const f = st.dir === 1 ? st.f! : 1 - st.f!;
-      out[p.id] = { s: "transit", gx: lerp(a[0], b[0], f), gy: lerp(a[1], b[1], f) };
+      out[p.id] = { s: "transit", gx: lerp(a[0], b[0], f), gy: lerp(a[1], b[1], f), from: p.home, to: p.office, f };
     } else {
       const node = st.s === "home" ? p.home : p.office;
       (groups[node] ??= []).push(p.id);
@@ -43,7 +51,9 @@ export function snapshot(people: readonly Person[], t: number): Snapshot {
     const ids = groups[node as AreaId]!, n = ids.length, [cx, cy] = NODES[node as AreaId].g;
     ids.forEach((id, i) => {
       const a = (i / n) * Math.PI * 2 + .9, r = n === 1 ? .95 : 1.05;
-      out[id]!.gx = cx + Math.cos(a) * r; out[id]!.gy = cy + Math.sin(a) * r;
+      const o = out[id]!;
+      o.ox = Math.cos(a); o.oy = Math.sin(a);
+      o.gx = cx + o.ox * r; o.gy = cy + o.oy * r;
     });
   }
   return out;

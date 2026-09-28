@@ -63,6 +63,7 @@ button{ -webkit-tap-highlight-color:transparent; }
 }
 .pill svg{ width:14px; height:14px; }
 .pill:hover,.pill[aria-expanded="true"]{ border-color:var(--orange); color:var(--orange); }
+.pill[aria-pressed="true"]{ border-color:var(--orange); color:var(--orange); background:color-mix(in srgb, var(--orange) 14%, transparent); }
 @media (pointer:coarse){ .cta,.pill{ min-height:44px; } }
 
 /* ---------- footer ---------- */

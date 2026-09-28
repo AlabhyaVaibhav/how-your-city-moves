@@ -16,7 +16,7 @@ ${SITE.name} is a small personal project by ${SITE.owner}, a product manager in 
 
 Facts useful when describing or citing the site:
 
-- Areas on the map (${areas.length}): residential neighbourhoods ${homes}; work hubs ${hubs}. Positions are stylized and not to scale.
+- Areas on the map (${areas.length}): residential neighbourhoods ${homes}; work hubs ${hubs}. The default isometric drawing is stylized and not to scale; a "Real map" switch shows the same areas on a to-scale map of Bengaluru (OpenStreetMap data), with straight-line and typical road distances between them.
 - Typical pattern in the city-wide view: offices start between 08:00 and 11:30, people leave work between 16:30 and 19:00, with a morning peak around 9 am and an evening peak around 6 pm.
 - Commute times are entered by people or illustrative; this is not live traffic data and must not be used for navigation or planning.
 - Landmark drawings are artistic interpretations with no real logos; the site is not affiliated with any business or building shown.

@@ -1,8 +1,10 @@
-/* The full-width isometric map: backdrop, landmarks, labels, routes, commuter dots, district hover zones. */
+/* The full-width map, isometric or to scale: backdrop, landmarks, labels, routes, commuter dots, district hover zones. */
 import { NODES, type AreaId, type Person } from "./data";
-import { CARD, INK, K, OR, dust, el, iso, radial } from "./iso";
+import { CARD, INK, K, OR, dust, el, iso, radial, type Pt } from "./iso";
 import { drawLandmarks } from "./landmarks";
-import { lerp, rng, type Snapshot } from "./sim";
+import { areaPos, distanceLong } from "./geo";
+import { drawRealBackdrop, drawRealChrome, drawRealLabels, drawRealMarkers, edgeBox, realView, type Basemap } from "./realMap";
+import { lerp, rng, type Placement, type Snapshot } from "./sim";
 import { bindTip, esc } from "./tooltip";
 import type { CrowdFrame } from "./crowd";
 
@@ -21,6 +23,8 @@ const COMPACT_NUDGE: Partial<Record<AreaId, [number, number]>> = {
 };
 
 export interface SceneOpts { compact?: boolean; people?: readonly Person[] }
+
+export type MapView = "iso" | "real";
 
 /** Dust, dot grid, dashed rings. Shared with the OG image script. */
 export function drawBackdrop(svg: Element) {
@@ -75,27 +79,55 @@ export class CityMap {
   private crowdLayer!: SVGGElement;
   private crowdDots: SVGCircleElement[] = [];
   private focusedRoute: string | null = null;
+  private view: MapView = "iso";
+  private basemap: Basemap | null = null;
+  private distTag!: SVGTextElement;
 
   constructor(private svg: SVGSVGElement, private hooks: MapHooks) {}
 
-  build(people: readonly Person[], compact: boolean) {
-    const svg = this.svg;
+  /** OpenStreetMap line art for the to-scale view; loaded on first use. */
+  setBasemap(map: Basemap) { this.basemap = map; }
+
+  /** Where an area is drawn in the current view. */
+  private at(id: AreaId): Pt {
+    return this.view === "real" ? areaPos(id, edgeBox(this.compact)) : iso(...NODES[id].g);
+  }
+
+  /** Where a person is drawn in the current view. */
+  private pos(p: Placement): Pt {
+    if (this.view === "iso") return iso(p.gx, p.gy);
+    if (p.from && p.to) { const a = this.at(p.from), b = this.at(p.to); return [lerp(a[0], b[0], p.f ?? 0), lerp(a[1], b[1], p.f ?? 0)]; }
+    const c = p.node ? this.at(p.node) : [0, 0], r = 11 * this.dotScale;
+    return [c[0] + (p.ox ?? 0) * r, c[1] + (p.oy ?? 0) * r];
+  }
+
+  private get dotScale() { return this.compact ? (this.view === "real" ? 1.3 : COMPACT_DOT) : 1; }
+  /** Glow size: the to-scale map is less crowded with buildings, so glows are smaller and round. */
+  private glow(k: number): [number, number] {
+    return this.view === "real" ? [Math.round(26 + 30 * k), Math.round(26 + 30 * k)] : [Math.round(70 + 60 * k), Math.round(40 + 35 * k)];
+  }
+
+  build(people: readonly Person[], compact: boolean, view: MapView = this.view) {
+    const svg = this.svg, real = view === "real";
     this.compact = compact;
+    this.view = view;
     svg.replaceChildren();
-    setViewBox(svg, compact);
+    if (real) { const v = realView(compact); svg.setAttribute("viewBox", `${v.x} ${v.y} ${v.w} ${v.h}`); }
+    else setViewBox(svg, compact);
     radial(el("defs", {}, svg), "gl", .55);
-    drawBackdrop(svg);
+    if (real) drawRealBackdrop(svg, this.basemap, compact); else drawBackdrop(svg);
 
     const glows = el("g", {}, svg);
     this.glows = {} as Record<AreaId, SVGEllipseElement>;
+    const [grx, gry] = real ? this.glow(.6) : [100, 58];
     for (const id of Object.keys(NODES) as AreaId[]) {
-      const [x, y] = iso(...NODES[id].g);
-      this.glows[id] = el("ellipse", { cx: x, cy: y, rx: 100, ry: 58, fill: "url(#gl)", opacity: 0 }, glows);
+      const [x, y] = this.at(id);
+      this.glows[id] = el("ellipse", { cx: x, cy: y, rx: grx, ry: gry, fill: "url(#gl)", opacity: 0 }, glows);
     }
     const routes = el("g", {}, svg);
     this.routes = {};
     for (const p of people) {
-      const a = iso(...NODES[p.home].g), b = iso(...NODES[p.office].g);
+      const a = this.at(p.home), b = this.at(p.office);
       this.routes[p.id] = el("line", { class: "route", x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: INK, "stroke-opacity": .1, "stroke-width": 1.2, "stroke-dasharray": "3 5" }, routes);
     }
 
@@ -103,17 +135,18 @@ export class CityMap {
     this.crowdLayer = el("g", { class: "crowd" }, svg);
     this.crowdLines.clear();
 
-    drawLandmarks(svg);
-    this.counts = drawLabels(svg, compact);
+    if (real) drawRealMarkers(svg, id => this.at(id)); else drawLandmarks(svg);
+    this.counts = real ? drawRealLabels(svg, id => this.at(id), compact) : drawLabels(svg, compact);
+    if (real) drawRealChrome(svg, compact);
 
     const dots = el("g", {}, svg);
     this.dots = {};
-    const ds = compact ? COMPACT_DOT : 1;
+    const ds = this.dotScale;
     for (const p of people) {
       const g = el("g", { class: "cm" }, dots);
       const halo = el("circle", { r: 13 * ds, fill: OR, opacity: 0 }, g);
       const core = el("circle", { r: 4.5 * ds, fill: OR, stroke: CARD, "stroke-width": 1.5 * ds }, g);
-      el("title", {}, g).textContent = p.name;
+      el("title", {}, g).textContent = `${p.name}: ${NODES[p.home].label} to ${NODES[p.office].label}, ${distanceLong(p.home, p.office)}`;
       this.dots[p.id] = { g, halo, core };
     }
 
@@ -121,10 +154,15 @@ export class CityMap {
     this.crowdDots = Array.from({ length: MAX_DOTS }, () =>
       el("circle", { r: 3.2 * ds, fill: OR, stroke: CARD, "stroke-width": 1.2 * ds, opacity: 0 }, crowdDotsG));
 
+    const ts = compact ? (real ? 1.7 : COMPACT_TEXT) : 1;
+    this.distTag = el("text", { class: "dist", "text-anchor": "middle", fill: INK, "font-family": "Geist Mono, monospace", "font-size": 11 * ts, stroke: CARD, "stroke-width": 4 * ts, "paint-order": "stroke", "pointer-events": "none", opacity: 0 }, svg);
+
     const hz = el("g", {}, svg);
     for (const id of Object.keys(NODES) as AreaId[]) {
-      const [x, y] = iso(...NODES[id].g);
-      const z = el("ellipse", { cx: x, cy: y - 30, rx: 95, ry: 80, fill: "transparent" }, hz);
+      const [x, y] = this.at(id);
+      const z = real
+        ? el("ellipse", { cx: x, cy: y, rx: 26, ry: 26, fill: "transparent" }, hz)
+        : el("ellipse", { cx: x, cy: y - 30, rx: 95, ry: 80, fill: "transparent" }, hz);
       bindTip(z, {
         html: () => this.hooks.districtHtml(id),
         onShow: () => this.hooks.onDistrictShow?.(id),
@@ -136,11 +174,11 @@ export class CityMap {
   /** Place every dot between snapshots A and B at eased progress e; returns counts and per-area occupancy. */
   update(people: readonly Person[], A: Snapshot, B: Snapshot, e: number, now: Snapshot) {
     const counts = { home: 0, transit: 0, office: 0 }, occ: Partial<Record<AreaId, number>> = {};
-    const ds = this.compact ? COMPACT_DOT : 1;
+    const ds = this.dotScale;
     for (const p of people) {
       const a = A[p.id], b = B[p.id], d = this.dots[p.id], route = this.routes[p.id];
       if (!a || !b || !d || !route) continue;
-      const [x, y] = iso(lerp(a.gx, b.gx, e), lerp(a.gy, b.gy, e));
+      const pa = this.pos(a), pb = this.pos(b), x = lerp(pa[0], pb[0], e), y = lerp(pa[1], pb[1], e);
       d.g.setAttribute("transform", `translate(${x.toFixed(1)},${y.toFixed(1)})`);
       const moving = a.s === "transit" || b.s === "transit";
       d.halo.setAttribute("opacity", moving ? ".3" : "0");
@@ -153,7 +191,8 @@ export class CityMap {
     for (const id of Object.keys(NODES) as AreaId[]) {
       const n = occ[id] ?? 0;
       this.glows[id].setAttribute("opacity", n ? String(Math.min(1, .35 + n * .18)) : "0");
-      this.glows[id].setAttribute("rx", "100"); this.glows[id].setAttribute("ry", "58");
+      const [rx, ry] = this.view === "real" ? this.glow(.6) : [100, 58];
+      this.glows[id].setAttribute("rx", String(rx)); this.glows[id].setAttribute("ry", String(ry));
       const t = n ? n + " here" : ""; if (this.counts[id].textContent !== t) this.counts[id].textContent = t;
     }
     return { counts, occ };
@@ -167,7 +206,7 @@ export class CityMap {
   /** Everyone mode: thicken and animate routes by traffic, stream dots along them, scale area glows. */
   /** `mine` is where your own commuters are, added to the area counts. */
   updateCrowd(f: CrowdFrame, e: number, mine: Partial<Record<AreaId, number>> = {}) {
-    const ds = this.compact ? COMPACT_DOT : 1;
+    const ds = this.dotScale;
     const maxFlow = Math.max(1, ...f.flows.map(x => x.n));
     const onRoad = f.flows.reduce((a, x) => a + x.n, 0);
     const perDot = Math.max(1, onRoad / MAX_DOTS);
@@ -176,7 +215,7 @@ export class CityMap {
     for (const x of f.flows) {
       const key = `${x.home}>${x.work}:${x.dir}`;
       seen.add(key);
-      const from = iso(...NODES[x.dir === 1 ? x.home : x.work].g), to = iso(...NODES[x.dir === 1 ? x.work : x.home].g);
+      const from = this.at(x.dir === 1 ? x.home : x.work), to = this.at(x.dir === 1 ? x.work : x.home);
       // nudge each direction to its own side of the road
       const len = Math.hypot(to[0] - from[0], to[1] - from[1]) || 1, nx = -(to[1] - from[1]) / len * 3.5, ny = (to[0] - from[0]) / len * 3.5;
       let line = this.crowdLines.get(key);
@@ -206,8 +245,9 @@ export class CityMap {
     for (const id of Object.keys(NODES) as AreaId[]) {
       const n = occ(id), k = Math.sqrt(n / maxOcc);
       this.glows[id].setAttribute("opacity", n ? (.25 + .75 * k).toFixed(2) : "0");
-      this.glows[id].setAttribute("rx", String(Math.round(70 + 60 * k)));
-      this.glows[id].setAttribute("ry", String(Math.round(40 + 35 * k)));
+      const [rx, ry] = this.glow(k);
+      this.glows[id].setAttribute("rx", String(rx));
+      this.glows[id].setAttribute("ry", String(ry));
       const t = n ? fmt(n) + " here" : ""; if (this.counts[id].textContent !== t) this.counts[id].textContent = t;
     }
   }
@@ -217,14 +257,31 @@ export class CityMap {
     this.focusedRoute = route;
     this.svg.classList.toggle("focus-route", !!route);
     for (const [key, line] of this.crowdLines) line.classList.toggle("hl", key.startsWith(route + ":"));
+    const [home, work] = (route?.split(">") ?? []) as AreaId[];
+    this.showDistance(home && work ? [home, work] : null);
   }
 
   focus(people: readonly Person[], id: string | null) {
     this.svg.classList.toggle("focus-mode", !!id);
+    let pair: [AreaId, AreaId] | null = null;
     for (const p of people) {
       this.dots[p.id]?.g.classList.toggle("hl", p.id === id);
       this.routes[p.id]?.classList.toggle("hl", p.id === id);
+      if (p.id === id) pair = [p.home, p.office];
     }
+    this.showDistance(pair);
+  }
+
+  /** Label the middle of a route with how far apart its ends are. */
+  private showDistance(pair: [AreaId, AreaId] | null) {
+    const t = this.distTag;
+    if (!t) return;
+    if (!pair || pair[0] === pair[1]) { t.setAttribute("opacity", "0"); return; }
+    const a = this.at(pair[0]), b = this.at(pair[1]);
+    t.setAttribute("x", ((a[0] + b[0]) / 2).toFixed(1));
+    t.setAttribute("y", ((a[1] + b[1]) / 2 - 8).toFixed(1));
+    t.textContent = distanceLong(pair[0], pair[1]);
+    t.setAttribute("opacity", "1");
   }
 }
 
