@@ -50,6 +50,27 @@ function gable(g: Element, gx: number, gy: number, w: number, d: number, h: numb
   for (let f = .25; f < 1; f += .25) ln(g, [gx - w - ov, lerp(gy + d + ov, gy, f), lerp(h, h + rh, f)], [gx + w + ov, lerp(gy + d + ov, gy, f), lerp(h, h + rh, f)], .3);
 }
 
+/** Upright cylinder (tank, silo): front of the wall, then the lid. */
+function tank(g: Element, cx: number, cy: number, r: number, h: number, base = 0) {
+  const arc = (z: number, from: number, to: number) => {
+    const a: Pt3[] = []; for (let i = 0; i <= 14; i++) { const t = lerp(from, to, i / 14); a.push([cx + Math.cos(t) * r, cy + Math.sin(t) * r, z]); } return a;
+  };
+  poly(g, [...arc(base, -Math.PI / 4, Math.PI * .75), ...arc(base + h, Math.PI * .75, -Math.PI / 4)], F2);
+  isoCircle(g, cx, cy, r, base + h, { "stroke-opacity": .78 }).setAttribute("fill", F1);
+}
+
+/** Factory shed with a sawtooth roof, teeth running along gx. */
+function sawtooth(g: Element, gx: number, gy: number, w: number, d: number, h: number, teeth: number) {
+  box(g, gx, gy, w, d, h, { noTop: true });
+  const step = 2 * w / teeth, rh = 9;
+  for (let i = 0; i < teeth; i++) {
+    const x0 = gx - w + i * step, x1 = x0 + step;
+    poly(g, [[x0, gy - d, h], [x1, gy - d, h + rh], [x1, gy + d, h + rh], [x0, gy + d, h]], F1);
+    poly(g, [[x0, gy + d, h], [x1, gy + d, h], [x1, gy + d, h + rh]], F1);
+    poly(g, [[x1, gy - d, h], [x1, gy + d, h], [x1, gy + d, h + rh], [x1, gy - d, h + rh]], F2, { "stroke-opacity": .5 });
+  }
+}
+
 /** Draw every landmark into a new <g> under `parent`, back to front. */
 export function drawLandmarks(parent: Element) {
   const parts: { k: number; draw: (g: Element) => void }[] = [];
@@ -152,6 +173,81 @@ export function drawLandmarks(parent: Element) {
       ([[-.55, -.35, .26, 26], [.35, -.5, .22, 34], [-.2, .45, .3, 18], [.6, .35, .2, 22]] as const).forEach(([dx, dy, s, h]) =>
         add(gx + gy + dx + dy, g => box(g, gx + dx, gy + dy, s, s * .8, h, { bands: 8 })));
       add(gx + gy + 1.4, g => { palm(g, gx + .95, gy + .9, 26); palm(g, gx - .9, gy + .85, 20); });
+    } else if (id === "peenya") {
+      // industrial estate: sawtooth-roofed sheds and a chimney
+      add(gx + gy - .6, g => sawtooth(g, gx - .2, gy - .5, .5, .28, 12, 4));
+      add(gx + gy - .2, g => box(g, gx + .55, gy - .45, .05, .05, 58, { lf: DARK, rf: DARK, tf: DARK }));
+      add(gx + gy + .3, g => sawtooth(g, gx + .1, gy + .3, .45, .25, 10, 3));
+    } else if (id === "yeswanthpur") {
+      // railway station: a long platform roof, a clock tower, a metro viaduct behind
+      add(gx + gy - 1.1, g => {
+        [-.5, .3].forEach(x => box(g, gx + x, gy - .7, .04, .04, 20, { lf: DARK, rf: DARK }));
+        box(g, gx - .1, gy - .7, .55, .09, 4, { base: 20 });
+      });
+      add(gx + gy - .1, g => gable(g, gx - .2, gy, .42, .2, 9, 8, .05));
+      add(gx + gy + .5, g => {
+        const x = gx + .4, y = gy + .05, w = .12;
+        box(g, x, y, w, w, 44, { bands: 11 });
+        poly(g, [[x - w, y - w, 44], [x + w, y - w, 44], [x, y, 58]], F2); poly(g, [[x - w, y + w, 44], [x + w, y + w, 44], [x, y, 58]], F1);
+        poly(g, [[x + w, y + w, 44], [x + w, y - w, 44], [x, y, 58]], F2);
+        const c = (r: number) => { const a: Pt3[] = []; for (let i = 0; i < 20; i++) { const t = i / 20 * Math.PI * 2; a.push([x + w + .001, y + Math.cos(t) * r, 36 + Math.sin(t) * r * 44]); } return a; };
+        poly(g, c(.07), DARK, { "stroke-opacity": .9 });
+      });
+    } else if (id === "dobaspet") {
+      // far-out industrial area: long warehouses and a silo
+      add(gx + gy - .7, g => gable(g, gx - .1, gy - .5, .6, .25, 12, 9, .05));
+      add(gx + gy - .1, g => tank(g, gx + .55, gy + .05, .2, 34));
+      add(gx + gy + .2, g => gable(g, gx - .3, gy + .35, .45, .22, 10, 8, .05));
+    } else if (id === "jayanagar") {
+      // leafy blocks: low houses, a shopping complex and trees
+      add(gx + gy - .7, g => box(g, gx - .05, gy - .55, .45, .2, 16, { bands: 8 }));
+      ([[-.5, .1], [.1, .2], [.55, -.3]] as const).forEach(([dx, dy]) =>
+        add(gx + gy + dx + dy, g => gable(g, gx + dx, gy + dy, .17, .14, 9, 8, .03)));
+      add(gx + gy + 1.1, g => { palm(g, gx + .6, gy + .5, 22); palm(g, gx - .55, gy + .7, 18); });
+    } else if (id === "bommasandra") {
+      // factory with twin chimneys and a storage tank
+      add(gx + gy - .6, g => box(g, gx - .1, gy - .35, .5, .3, 20, { bands: 10 }));
+      [-.35, -.05].forEach(dx => add(gx + gy - .9 + dx, g => box(g, gx + dx, gy - .6, .05, .05, 52, { lf: DARK, rf: DARK, tf: DARK })));
+      add(gx + gy + .6, g => tank(g, gx + .5, gy + .25, .2, 16));
+      add(gx + gy + .4, g => sawtooth(g, gx - .3, gy + .4, .3, .18, 9, 2));
+    } else if (id === "chandapura") {
+      // newer apartment towers on the city's edge
+      ([[-.45, -.2, 38], [.15, -.45, 48], [.35, .3, 30]] as const).forEach(([dx, dy, h]) =>
+        add(gx + gy + dx + dy, g => box(g, gx + dx, gy + dy, .2, .2, h, { bands: 6 })));
+      add(gx + gy + 1, g => palm(g, gx - .5, gy + .55, 18));
+    } else if (id === "attibele") {
+      // the toll plaza on the state border: a long canopy over booths
+      add(gx + gy - .5, g => box(g, gx - .55, gy - .55, .25, .2, 14));
+      [-.45, 0, .45].forEach(dx => add(gx + gy + dx - .05, g => box(g, gx + dx, gy, .07, .07, 9)));
+      add(gx + gy + .3, g => {
+        [-.7, .7].forEach(dx => box(g, gx + dx, gy + .12, .03, .03, 20, { lf: DARK, rf: DARK }));
+        box(g, gx, gy, .78, .22, 5, { base: 20, bands: 0 });
+      });
+    } else if (id === "sarjapur") {
+      // tech park: two glass towers over a podium
+      add(gx + gy - .3, g => box(g, gx, gy, .6, .35, 8));
+      add(gx + gy - .6, g => box(g, gx - .25, gy - .15, .22, .18, 60, { base: 8, fins: [.25, .5, .75], finOp: .3, bands: 13 }));
+      add(gx + gy + .1, g => box(g, gx + .3, gy + .05, .2, .16, 44, { base: 8, fins: [.33, .66], finOp: .3, bands: 12 }));
+    } else if (id === "varthur") {
+      // the lake, with a few houses and trees on its shore
+      add(gx + gy - 2, g => {
+        isoCircle(g, gx + .1, gy + .2, .6, 0, { "stroke-opacity": .55 });
+        isoCircle(g, gx + .1, gy + .2, .38, 0, { "stroke-opacity": .25 });
+        isoCircle(g, gx + .1, gy + .2, .18, 0, { "stroke-opacity": .15 });
+      });
+      add(gx + gy - .9, g => gable(g, gx - .35, gy - .55, .17, .14, 9, 7, .03));
+      add(gx + gy - .6, g => gable(g, gx + .25, gy - .75, .15, .13, 8, 7, .03));
+      add(gx + gy + 1.2, g => { palm(g, gx + .85, gy + .5, 20); palm(g, gx - .55, gy + .75, 16); });
+    } else if (id === "krpuram") {
+      // the cable-stayed bridge over the railway at the interchange
+      add(gx + gy - .4, g => box(g, gx - .5, gy - .55, .22, .2, 24, { bands: 8 }));
+      add(gx + gy + .2, g => {
+        const y = gy + .15, top: Pt3 = [gx + .1, y, 64];
+        box(g, gx - .1, y, .9, .07, 3, { base: 14 });
+        [-.75, .55].forEach(dx => box(g, gx + dx, y, .04, .04, 14, { lf: DARK, rf: DARK }));
+        box(g, gx + .1, y, .05, .05, 64, { lf: DARK, rf: DARK, tf: DARK });
+        [-.9, -.65, -.4, .35, .55, .75].forEach(dx => ln(g, top, [gx + .1 + dx, y + .07, 17], .5, INK, 1));
+      });
     } else if (id === "marathahalli") {
       ([[-.45, .55, .24, .42], [0, 0, .34, 1], [.62, .35, .26, .58]] as const).forEach(([dx, dy, s, hf]) =>
         add(gx + gy + dx + dy, g => box(g, gx + dx, gy + dy, s, s, 66 * hf, { bands: 11 })));

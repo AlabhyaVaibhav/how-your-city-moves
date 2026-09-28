@@ -24,6 +24,17 @@ const RAW_NODES = {
   electronic:   { label: "Electronic City",   short: "E-City",      g: [5.5, 10],  kind: "office", h: 88 },
   // added last so every earlier landmark keeps its exact drawing
   kalyannagar:  { label: "Kalyan Nagar",      short: "Kalyan Ngr",  g: [7.2, 0.4], kind: "home" },
+  // outlying areas are pulled in towards the centre so the map stays readable
+  peenya:       { label: "Peenya",            short: "Peenya",      g: [-0.61, 3.74],  kind: "office" },
+  yeswanthpur:  { label: "Yeswanthpur",       short: "Yeswanthpur", g: [1.19, 3.19],    kind: "office" },
+  dobaspet:     { label: "Dobaspet",          short: "Dobaspet",    g: [-2.63, 3.88], kind: "office" },
+  jayanagar:    { label: "Jayanagar",         short: "Jayanagar",   g: [2.9, 4.91],  kind: "home" },
+  bommasandra:  { label: "Bommasandra",       short: "Bommasandra", g: [8, 10], kind: "office" },
+  chandapura:   { label: "Chandapura",        short: "Chandapura",  g: [7.11, 13.36], kind: "home" },
+  attibele:     { label: "Attibele",          short: "Attibele",    g: [11.8, 8.2],  kind: "home" },
+  sarjapur:     { label: "Sarjapur Road",     short: "Sarjapur",    g: [9.59, 8.07],  kind: "office" },
+  varthur:      { label: "Varthur",           short: "Varthur",     g: [12.5, 3.4], kind: "home" },
+  krpuram:      { label: "KR Puram / Tin Factory", short: "KR Puram",    g: [9.92, -0.08],  kind: "home" },
 } satisfies Record<string, Area>;
 
 export type AreaId = keyof typeof RAW_NODES;

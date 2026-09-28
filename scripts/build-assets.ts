@@ -39,7 +39,7 @@ root.innerHTML = `<rect width="${W}" height="${H}" fill="${CARD}"/>`;
 
 // the map, shifted right so the title has room top-left
 const mapG = document.createElementNS(NS, "g");
-mapG.setAttribute("transform", "translate(150 12) scale(.93)");
+mapG.setAttribute("transform", "translate(425 40) scale(.65)");
 root.appendChild(mapG);
 const mapSvg = document.createElementNS(NS, "svg");
 mapSvg.setAttribute("width", "1200"); mapSvg.setAttribute("height", "640");
@@ -61,10 +61,10 @@ const bracket = (x: number, y: number, dx: number, dy: number) =>
 // spliced in as text: linkedom parses self-closing SVG tags as HTML and would nest them
 const overlay = [
   bracket(36, 36, 1, 1), bracket(W - 36, 36, -1, 1), bracket(36, H - 36, 1, -1), bracket(W - 36, H - 36, -1, -1),
-  `<text x="72" y="116" font-family="Geist" font-weight="600" font-size="60" letter-spacing="-1.5" fill="${INK}">How Bangalore</text>`,
-  `<text x="72" y="182" font-family="Geist" font-weight="600" font-size="60" letter-spacing="-1.5" fill="${INK}">moves</text>`,
-  `<text x="72" y="228" font-family="Geist" font-size="21" fill="${INK}" fill-opacity=".62">Watch the city commute,</text>`,
-  `<text x="72" y="256" font-family="Geist" font-size="21" fill="${INK}" fill-opacity=".62">half an hour at a time.</text>`,
+  `<text x="72" y="116" font-family="Geist" font-weight="600" font-size="54" letter-spacing="-1.4" fill="${INK}">How Bangalore</text>`,
+  `<text x="72" y="176" font-family="Geist" font-weight="600" font-size="54" letter-spacing="-1.4" fill="${INK}">moves</text>`,
+  `<text x="72" y="222" font-family="Geist" font-size="21" fill="${INK}" fill-opacity=".62">Watch the city commute,</text>`,
+  `<text x="72" y="250" font-family="Geist" font-size="21" fill="${INK}" fill-opacity=".62">half an hour at a time.</text>`,
   `<circle cx="80" cy="${H - 76}" r="6" fill="${OR}"/>`,
   `<text x="96" y="${H - 70}" font-family="Geist Mono" font-size="17" fill="${OR}">09:15 · day 1</text>`,
 ].join("");
