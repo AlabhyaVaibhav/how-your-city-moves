@@ -22,6 +22,7 @@ export interface EventMap {
   speed_changed: { speed_bucket: SpeedBucket };
   names_toggled: { visible: boolean };
   district_hovered: { area: AreaId };
+  map_view_changed: { view: "iso" | "real" };
   data_cleared: None;
   /** Intent only: UPI payments happen in the payer's app, so completion can't be seen. */
   chip_in_clicked: { amount: number; method: "upi_app" | "copy_id" };

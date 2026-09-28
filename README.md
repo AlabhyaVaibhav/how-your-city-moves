@@ -7,6 +7,9 @@ Live at **https://www.howyourcitymoves.fyi**
 
 - **The city, right now**: hand-drawn isometric landmarks for twenty areas. City-wide traffic flows along the
   routes, and your own commuters are drawn on top in cream.
+- **Real map**: a switch on the map card shows the same areas on a to-scale map of Bengaluru, with distances.
+  The roads, lakes and road-distance table are built once from OpenStreetMap with `npm run basemap` and
+  committed, so the site never calls a map service.
 - **Rush hours**: people on the road in each hour.
 - **Where everyone is**: at home, on the road, at work, updating with the clock.
 - **In the city**: the busiest routes across the city (hover one to highlight it on the map), plus your own
