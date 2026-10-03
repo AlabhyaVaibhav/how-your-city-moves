@@ -1,5 +1,6 @@
 /* Landmark buildings drawn as isometric line art. Artistic interpretations only: no logos or wordmarks. */
 import { NODES, type AreaId } from "./data";
+import type { Look } from "../cities/types";
 import { CARD as F1, DARK, AMBER, F2, INK, K, el, iso, pts, type Pt, type Pt3 } from "./iso";
 import { lerp, rng } from "./sim";
 import { LANDMARKS } from "./landmarks/index";
@@ -92,6 +93,49 @@ export type Kit = ReturnType<typeof makeKit>;
 /** A landmark module's drawing, centred on grid point (gx, gy). */
 export type DrawLandmark = (k: Kit, gx: number, gy: number) => void;
 
+/** Stand-in drawings for areas that have no landmark yet, by the area's `look`. Varied per area by `rnd`. */
+function drawLook(k: Kit, look: Look, gx: number, gy: number, h: number | undefined, rnd: () => number) {
+  const { add } = k;
+  const jit = (n: number) => (rnd() - .5) * n;
+  if (look === "towers") {
+    // a podium with a tall glass tower and two shorter ones
+    const H = h ?? 76;
+    add(gx + gy - .9, g => box(g, gx - .45, gy - .45, .26, .22, H * .62, { fins: [.33, .66], finOp: .28, bands: 11 }));
+    add(gx + gy - .2, g => box(g, gx, gy, .7, .45, 7));
+    add(gx + gy + .05, g => box(g, gx + .12 + jit(.1), gy - .05, .25, .22, H, { base: 7, fins: [.25, .5, .75], finOp: .3, bands: 12 }));
+    add(gx + gy + .7, g => box(g, gx + .55, gy + .35, .18, .16, H * .45, { fins: [.5], finOp: .25, bands: 10 }));
+  } else if (look === "industry") {
+    // sheds with sawtooth roofs, a chimney and a tank
+    add(gx + gy - 1, g => box(g, gx - .55, gy - .55, .05, .05, 50 + jit(12), { lf: DARK, rf: DARK, tf: DARK }));
+    add(gx + gy - .4, g => sawtooth(g, gx - .1, gy - .2, .55, .3, 12, 4));
+    add(gx + gy + .5, g => tank(g, gx + .6, gy + .1, .18, 14));
+    add(gx + gy + .6, g => sawtooth(g, gx - .25, gy + .55, .35, .2, 9, 3));
+  } else if (look === "apartments") {
+    // mid-rise blocks among trees
+    ([[-.45, -.3], [.25, -.45], [-.05, .25], [.55, .3]] as const).forEach(([dx, dy], i) => {
+      const hh = 18 + rnd() * 14 + (i === 1 ? 8 : 0);
+      add(gx + gy + dx + dy, g => box(g, gx + dx, gy + dy, .16, .14, hh, { bands: 6 }));
+    });
+    add(gx + gy + 1.1, g => { palm(g, gx - .6, gy + .55, 15); palm(g, gx + .2, gy + .75, 16); });
+  } else if (look === "suburb") {
+    // low houses with pitched roofs, and trees
+    ([[-.55, -.45], [.15, -.6], [.6, -.05], [-.35, .2], [.3, .5]] as const).forEach(([dx, dy]) =>
+      add(gx + gy + dx + dy, g => gable(g, gx + dx, gy + dy, .16 + rnd() * .04, .13, 8 + rnd() * 3, 7, .03)));
+    add(gx + gy + 1.2, g => { palm(g, gx - .7, gy + .65, 15); palm(g, gx + .85, gy + .45, 17); });
+  } else {
+    // old town: tightly packed low buildings around a clock tower
+    ([[-.6, -.4], [-.15, -.6], [.35, -.45], [.65, 0], [-.55, .25], [.25, .45]] as const).forEach(([dx, dy]) => {
+      const hh = 10 + rnd() * 10;
+      add(gx + gy + dx + dy, g => rnd() < .5 ? box(g, gx + dx, gy + dy, .2, .16, hh, { bands: 6 }) : gable(g, gx + dx, gy + dy, .18, .15, hh, 6, .03));
+    });
+    add(gx + gy - .05, g => {
+      box(g, gx, gy - .05, .1, .1, 46, { bands: 9 });
+      poly(g, [[gx - .1, gy + .05, 46], [gx + .1, gy + .05, 46], [gx, gy - .05, 60]], F1);
+      poly(g, [[gx + .1, gy + .05, 46], [gx + .1, gy - .15, 46], [gx, gy - .05, 60]], F2);
+    });
+  }
+}
+
 /** Draw every landmark into a new <g> under `parent`, back to front. */
 export function drawLandmarks(parent: Element) {
   const parts: { k: number; draw: (g: Element) => void }[] = [];
@@ -103,6 +147,8 @@ export function drawLandmarks(parent: Element) {
     if (own) {
       // one file per landmark in ./landmarks, made with the iso-landmark skill
       own(kit, gx, gy);
+    } else if (NODES[id].look) {
+      drawLook(kit, NODES[id].look!, gx, gy, NODES[id].h, rnd);
     } else if (id === "electronic") {
       // glass pyramid with a glass wing behind it
       add(gx + gy - 1.8, g => box(g, gx - 1.05, gy - .75, .55, .3, 34, { bands: 7 }));

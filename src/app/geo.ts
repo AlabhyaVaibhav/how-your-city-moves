@@ -51,7 +51,13 @@ export function roadKm(a: AreaId, b: AreaId): number | null {
   return CITY.roadKm[a]?.[b] ?? null;
 }
 
-const km = (n: number) => (n < 10 ? n.toFixed(1).replace(/\.0$/, "") : Math.round(n).toString()) + " km";
+const MI = 1.609344;
+/** A distance in the city's units: "7 km", "4.3 mi". */
+export const fmtDist = (kmv: number) => {
+  const n = CITY.units === "mi" ? kmv / MI : kmv;
+  return (n < 10 ? n.toFixed(1).replace(/\.0$/, "") : Math.round(n).toString()) + (CITY.units === "mi" ? " mi" : " km");
+};
+const km = fmtDist;
 
 /** "7 km", or "7 km by road" when a road distance is known. */
 export function distanceShort(a: AreaId, b: AreaId) {

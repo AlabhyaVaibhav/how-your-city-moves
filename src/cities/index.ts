@@ -3,9 +3,18 @@
  * public.areas in a new migration, then run `npm run basemap -- <id>`.
  */
 import bangalore from "./bangalore";
+import bayarea from "./bayarea";
+import chennai from "./chennai";
+import delhi from "./delhi";
+import hyderabad from "./hyderabad";
+import jaipur from "./jaipur";
+import kolkata from "./kolkata";
+import mumbai from "./mumbai";
+import pune from "./pune";
 import type { CityDef } from "./types";
 
-export const CITIES = { bangalore } as const;
+// in the order the picker lists them
+export const CITIES = { bangalore, mumbai, delhi, hyderabad, chennai, pune, kolkata, jaipur, bayarea } as const;
 
 export type CityId = keyof typeof CITIES;
 export const CITY_IDS = Object.keys(CITIES) as CityId[];

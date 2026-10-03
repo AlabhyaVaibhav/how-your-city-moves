@@ -48,14 +48,15 @@ const [s, w] = ungeo(VIEW_REAL.x - 60, VIEW_REAL.y + VIEW_REAL.h + 60), [n, e] =
 const bbox = `${s.toFixed(4)},${w.toFixed(4)},${n.toFixed(4)},${e.toFixed(4)}`;
 
 // many lakes here carry no water=* tag, so take all water except these; the size filter drops small ones
-const NOT_LAKE = "^(drain|canal|wastewater|river|stream|ditch|pond|basin|fountain|pool|moat)$";
+const NOT_LAKE = `^(drain|canal|wastewater|${CITY.osm.rivers ? "" : "river|"}stream|ditch|pond|basin|fountain|pool|moat)$`;
 const q = `[out:json][timeout:180];
 (
   rel(${CITY.osm.relation});
   way["highway"~"^(motorway|trunk|primary)$"](${bbox});
-  way["railway"="subway"](${bbox});
+  way["railway"~"^(subway|light_rail${CITY.osm.rail ? "|rail" : ""})$"]["service"!~"."](${bbox});
   way["natural"="water"]["water"!~"${NOT_LAKE}"](${bbox});
-  rel["natural"="water"]["water"!~"${NOT_LAKE}"](${bbox});
+  rel["natural"="water"]["water"!~"${NOT_LAKE}"](${bbox});${CITY.osm.coast ? `
+  way["natural"="coastline"](${bbox});` : ""}
 );
 out geom;`;
 
@@ -102,7 +103,8 @@ const area = (geom: { lat: number; lon: number }[]) => {
 
 /* ---------- build ---------- */
 const els = await overpass(q);
-const layers = { boundary: "", roads: "", ring: "", metro: "", lakes: "" };
+const layers: Record<string, string> = { boundary: "", roads: "", ring: "", metro: "", lakes: "" };
+if (CITY.osm.coast) layers.coast = "";
 for (const el of els) {
   const t = el.tags ?? {};
   if (el.type === "relation" && t.boundary === "administrative") {
@@ -112,8 +114,10 @@ for (const el of els) {
     const d = line(el.geometry);
     if (CITY.osm.ring.test(name)) layers.ring += d;
     else layers.roads += d;
-  } else if (el.type === "way" && t.railway === "subway") {
+  } else if (el.type === "way" && t.railway) {
     layers.metro += line(el.geometry, 1.5);
+  } else if (el.type === "way" && t.natural === "coastline") {
+    layers.coast += line(el.geometry, 1.2);
   } else if (t.natural === "water") {
     // a lake is either one closed way or a relation whose outer ring is split across several ways
     if (el.type === "way") { if (el.geometry && el.geometry.length > 3 && area(el.geometry) > 60) layers.lakes += line(el.geometry, .8) + "Z"; }

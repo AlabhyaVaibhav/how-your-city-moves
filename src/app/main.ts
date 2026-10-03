@@ -30,7 +30,7 @@ citySel.addEventListener("change", () => {
 });
 // the page is built for the default city; other cities rename it here
 if (CITY_ID !== DEFAULT_CITY) {
-  const name = `How ${CITY.name} moves`;
+  const name = CITY.title ?? `How ${CITY.name} moves`;
   $("siteName").textContent = name;
   document.title = name;
 }

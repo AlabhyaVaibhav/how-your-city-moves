@@ -3,7 +3,7 @@ import { NODES, type AreaId } from "./data";
 import { CITY } from "./city";
 import type { Basemap } from "../cities/types";
 import { CARD, INK, OR, dust, el, type Pt } from "./iso";
-import { PX_PER_KM, VIEW_REAL, VIEW_REAL_COMPACT, crowKm, isOffMap, truePos } from "./geo";
+import { PX_PER_KM, VIEW_REAL, VIEW_REAL_COMPACT, crowKm, fmtDist, isOffMap, truePos } from "./geo";
 import { rng } from "./sim";
 
 export type { Basemap } from "../cities/types";
@@ -28,6 +28,7 @@ export function drawRealBackdrop(svg: Element, map: Basemap | null, compact: boo
   el("rect", { x: v.x + 4, y: v.y + 4, width: v.w - 8, height: v.h - 8, rx: 6 }, clip);
   const g = el("g", { "clip-path": "url(#realclip)", fill: "none", "stroke-linecap": "round", "stroke-linejoin": "round", "aria-hidden": "true" }, svg);
   el("path", { d: map.lakes, fill: INK, "fill-opacity": .05, stroke: INK, "stroke-opacity": .22, "stroke-width": .8 }, g);
+  if (map.coast) el("path", { d: map.coast, stroke: INK, "stroke-opacity": .35, "stroke-width": 1.1 }, g);
   el("path", { d: map.boundary, stroke: INK, "stroke-opacity": .3, "stroke-width": 1.2, "stroke-dasharray": "5 5" }, g);
   el("path", { d: map.roads, stroke: INK, "stroke-opacity": .11, "stroke-width": .9 }, g);
   el("path", { d: map.metro, stroke: INK, "stroke-opacity": .28, "stroke-width": 1, "stroke-dasharray": "1 3" }, g);
@@ -43,10 +44,10 @@ export function drawRealChrome(svg: Element, compact: boolean) {
   };
   // backing so lakes and roads don't show through the key
   if (!compact) el("rect", { x: v.x + 12, y: v.y + v.h - 136, width: 250, height: 128, rx: 8, fill: CARD, "fill-opacity": .85 }, g);
-  // scale bar: 5 km
-  const km = 5, w = km * PX_PER_KM, x = v.x + 24 * s, y = v.y + v.h - 26 * s;
+  // scale bar: 5 km, or 3 miles
+  const mi = CITY.units === "mi", n = mi ? 3 : 5, w = n * (mi ? 1.609344 : 1) * PX_PER_KM, x = v.x + 24 * s, y = v.y + v.h - 26 * s;
   el("path", { d: `M${x} ${y - 5}V${y}H${x + w}V${y - 5}M${x + w / 2} ${y - 3}V${y}`, fill: "none", stroke: INK, "stroke-opacity": .6, "stroke-width": 1.2 }, g);
-  text(x + w + 8, y + 1, `${km} km`, 11);
+  text(x + w + 8, y + 1, `${n} ${mi ? "mi" : "km"}`, 11);
   // north arrow
   const nx = v.x + v.w - 30 * s, ny = v.y + 34 * s;
   el("path", { d: `M${nx} ${ny - 14 * s}L${nx + 6 * s} ${ny + 4 * s}L${nx} ${ny}L${nx - 6 * s} ${ny + 4 * s}Z`, fill: INK, "fill-opacity": .55 }, g);
@@ -57,7 +58,8 @@ export function drawRealChrome(svg: Element, compact: boolean) {
   // legend
   const lx = v.x + 24, ly = v.y + v.h - 118;
   ([[CITY.real.ringLabel, { "stroke-width": 2.2, "stroke-opacity": .45 }], ["Main roads", { "stroke-width": .9, "stroke-opacity": .3 }],
-    ["Metro", { "stroke-width": 1, "stroke-opacity": .5, "stroke-dasharray": "1 3" }], ["City limits", { "stroke-width": 1.2, "stroke-opacity": .45, "stroke-dasharray": "5 5" }]] as const)
+    [CITY.osm.rail ? "Metro, suburban rail" : "Metro", { "stroke-width": 1, "stroke-opacity": .5, "stroke-dasharray": "1 3" }], [CITY.real.boundaryLabel ?? "City limits", { "stroke-width": 1.2, "stroke-opacity": .45, "stroke-dasharray": "5 5" }]] as const)
+    .filter(([t]) => t)
     .forEach(([t, a], i) => {
       el("line", { x1: lx, y1: ly + i * 18, x2: lx + 26, y2: ly + i * 18, stroke: INK, "stroke-linecap": "round", ...a }, g);
       text(lx + 36, ly + i * 18 + 4, t, 11);
@@ -88,8 +90,8 @@ export function drawRealLabels(svg: Element, at: (id: AreaId) => Pt, compact: bo
     const t = el("text", { x, y, "text-anchor": anchor, fill: INK, "font-family": FONT, "font-size": 13 * s, "font-weight": 500, stroke: CARD, "stroke-width": 4 * s, "paint-order": "stroke", "stroke-linejoin": "round" }, labels);
     const name = compact ? NODES[id].short : NODES[id].label;
     // off-map areas say how far out they really are
-    const far = Math.round(crowKm(id, CITY.centre));
-    t.textContent = !isOffMap(id) ? name : compact ? `${name}, ${far} km` : `${name}, ${far} km from ${NODES[CITY.centre].label}`;
+    const far = fmtDist(Math.round(crowKm(id, CITY.centre))).replace(/\.\d/, "");
+    t.textContent = !isOffMap(id) ? name : compact ? `${name}, ${far}` : `${name}, ${far} from ${NODES[CITY.centre].label}`;
     counts[id] = el("text", { x, y: y + 14 * s, "text-anchor": anchor, fill: OR, "font-family": "Geist Mono, monospace", "font-size": 10 * s, stroke: CARD, "stroke-width": 3 * s, "paint-order": "stroke" }, labels);
   }
   return counts;

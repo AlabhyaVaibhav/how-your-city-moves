@@ -10,6 +10,7 @@
     "test": "vitest run",
     "assets": "tsx scripts/build-assets.ts",
     "basemap": "tsx scripts/build-basemap.ts",
+    "place": "tsx scripts/place-areas.ts",
     "preview:map": "tsx scripts/preview-map.ts"
   },
   "dependencies": {
