@@ -9,7 +9,7 @@ Area values are ids from the fixed lists in `src/cities/<city>/index.ts`.
 | Event | Props | Fires when | Code |
 |---|---|---|---|
 | `pageview` | (URL, sent by the provider) | Every page load: home, about, support, privacy, legal, 404 | `src/lib/site.ts` → `page()` |
-| `commuter_added` | `home_area`, `work_area`, `mode` (`walk`, `cycle`, `bike`, `car`, `public`), `commute_bucket` (`"<30"`, `"30-60"`, `"60+"`), `used_random_name` (bool), `shared_to_city` (bool) | "Add yourself" form submitted | `src/app/app.ts` |
+| `commuter_added` | `home_area`, `work_area`, `mode` (`walk`, `cycle`, `bike`, `car`, `public`), `days_count` (0–7; 0 when days weren't given), `commute_bucket` (`"<30"`, `"30-60"`, `"60+"`), `used_random_name` (bool), `shared_to_city` (bool) | "Add yourself" form submitted | `src/app/app.ts` |
 | `commuter_removed` | none | × on a row in "In the city" | `src/app/app.ts` |
 | `sample_reset` | none | "Reset to sample commuters" | `src/app/app.ts` |
 | `add_dialog_opened` | `source` (`"map_cta"` or `"gate"`) | "Add yourself" button on the map card | `src/app/app.ts` |

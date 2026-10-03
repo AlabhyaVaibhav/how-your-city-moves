@@ -1,5 +1,6 @@
 /* "In the city": the commuter list, show-names toggle, remove and reset. */
 import { MODES, MODE_VIA, NODES, type AreaId, type ModeId, type Person } from "./data";
+import { daysLabel } from "./days";
 import type { CitySlot, CityView } from "../lib/cityStats";
 import { hhmm, type Snapshot } from "./sim";
 import { distanceShort } from "./geo";
@@ -99,7 +100,7 @@ export class PeopleList {
       li.tabIndex = 0;
       li.innerHTML = `<div class="who"><b></b><span></span></div><span class="st"></span><button class="card-btn" type="button"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3.5" width="12" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M4.5 10.5 7 8l1.8 1.6L11.5 7" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button class="x" type="button">×</button>`;
       li.querySelector("b")!.textContent = p.name;
-      li.querySelector(".who span")!.textContent = `${NODES[p.home].label} to ${NODES[p.office].label}${p.mode ? " " + MODE_VIA[p.mode] : ""} · ${distanceShort(p.home, p.office)}, out ${hhmm(p.out)}, back ${hhmm(p.back)}`;
+      li.querySelector(".who span")!.textContent = `${NODES[p.home].label} to ${NODES[p.office].label}${p.mode ? " " + MODE_VIA[p.mode] : ""}${p.days ? ", " + daysLabel(p.days) : ""} · ${distanceShort(p.home, p.office)}, out ${hhmm(p.out)}, back ${hhmm(p.back)}`;
       const card = li.querySelector<HTMLButtonElement>(".card-btn")!;
       card.setAttribute("aria-label", "Commute card for " + p.name);
       card.title = "Commute card";
