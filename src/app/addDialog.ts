@@ -92,14 +92,31 @@ export interface AddDialog {
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
+/**
+ * Option groups for the area pickers. Cities made of several (Delhi NCR) group by region, in the order the
+ * regions first appear, with homes before work hubs inside each; other cities group by kind, with the
+ * picker's own kind first. The map's circle/diamond markers show the kind either way.
+ */
+export function areaGroups(nodes: Record<string, { label: string; kind: "home" | "office"; region?: string }>, first: "home" | "office") {
+  const ids = Object.keys(nodes), byLabel = (a: string, b: string) => nodes[a]!.label.localeCompare(nodes[b]!.label);
+  if (ids.some(id => nodes[id]!.region)) {
+    const regions = [...new Set(ids.map(id => nodes[id]!.region ?? ""))];
+    return regions.map(r => ({
+      label: r,
+      ids: ids.filter(id => (nodes[id]!.region ?? "") === r)
+        .sort((a, b) => (nodes[a]!.kind === first ? 0 : 1) - (nodes[b]!.kind === first ? 0 : 1) || byLabel(a, b)),
+    }));
+  }
+  const kinds = first === "home" ? (["home", "office"] as const) : (["office", "home"] as const);
+  return kinds.map(k => ({ label: k === "home" ? "Neighbourhoods" : "Work hubs", ids: ids.filter(id => nodes[id]!.kind === k).sort(byLabel) }));
+}
+
 function fillSelects(home: HTMLSelectElement, office: HTMLSelectElement) {
   ([home, office] as const).forEach((s, i) => {
     s.replaceChildren();
-    const groups = i === 0 ? [["home", "Neighbourhoods"], ["office", "Work hubs"]] : [["office", "Work hubs"], ["home", "Neighbourhoods"]];
-    for (const [k, l] of groups) {
-      const og = document.createElement("optgroup"); og.label = l!;
-      const ids = (Object.keys(NODES) as AreaId[]).filter(id => NODES[id].kind === k).sort((a, b) => NODES[a].label.localeCompare(NODES[b].label));
-      for (const id of ids) og.appendChild(new Option(NODES[id].label, id));
+    for (const g of areaGroups(NODES, i === 0 ? "home" : "office")) {
+      const og = document.createElement("optgroup"); og.label = g.label;
+      for (const id of g.ids) og.appendChild(new Option(NODES[id as AreaId].label, id));
       s.appendChild(og);
     }
   });

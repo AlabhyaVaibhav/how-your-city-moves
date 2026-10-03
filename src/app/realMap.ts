@@ -43,7 +43,8 @@ export function drawRealChrome(svg: Element, compact: boolean) {
     n.textContent = t; return n;
   };
   // backing so lakes and roads don't show through the key
-  if (!compact) el("rect", { x: v.x + 12, y: v.y + v.h - 136, width: 250, height: 128, rx: 8, fill: CARD, "fill-opacity": .85 }, g);
+  const legendY = CITY.real.legendTop ? v.y + 16 : v.y + v.h - 136;
+  if (!compact) el("rect", { x: v.x + 12, y: legendY, width: 250, height: CITY.real.legendTop ? 92 : 128, rx: 8, fill: CARD, "fill-opacity": .85 }, g);
   // scale bar: 5 km, or 3 miles
   const mi = CITY.units === "mi", n = mi ? 3 : 5, w = n * (mi ? 1.609344 : 1) * PX_PER_KM, x = v.x + 24 * s, y = v.y + v.h - 26 * s;
   el("path", { d: `M${x} ${y - 5}V${y}H${x + w}V${y - 5}M${x + w / 2} ${y - 3}V${y}`, fill: "none", stroke: INK, "stroke-opacity": .6, "stroke-width": 1.2 }, g);
@@ -56,7 +57,7 @@ export function drawRealChrome(svg: Element, compact: boolean) {
   text(v.x + v.w - 14 * s, v.y + v.h - 14 * s, "Map data © OpenStreetMap contributors", compact ? 7 : 10, { "text-anchor": "end", "fill-opacity": .45 });
   if (compact) return;
   // legend
-  const lx = v.x + 24, ly = v.y + v.h - 118;
+  const lx = v.x + 24, ly = legendY + 18;
   ([[CITY.real.ringLabel, { "stroke-width": 2.2, "stroke-opacity": .45 }], ["Main roads", { "stroke-width": .9, "stroke-opacity": .3 }],
     [CITY.osm.rail ? "Metro, suburban rail" : "Metro", { "stroke-width": 1, "stroke-opacity": .5, "stroke-dasharray": "1 3" }], [CITY.real.boundaryLabel ?? "City limits", { "stroke-width": 1.2, "stroke-opacity": .45, "stroke-dasharray": "5 5" }]] as const)
     .filter(([t]) => t)

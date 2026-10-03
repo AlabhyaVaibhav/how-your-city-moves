@@ -16,6 +16,8 @@ export interface Area {
   h?: number;
   /** How to draw an area that has no landmark of its own (see drawLook in src/app/landmarks.ts). */
   look?: Look;
+  /** For cities made of several (Delhi NCR: Delhi, Gurugram, Noida…): which one. Groups the area pickers. */
+  region?: string;
 }
 
 /**
@@ -67,6 +69,8 @@ export interface CityDef<Id extends string = string> {
     ringLabel: string;
     /** Legend text for the dashed boundary. Defaults to "City limits"; empty hides it (for regions with no one boundary). */
     boundaryLabel?: string;
+    /** Put the legend top-left when an area sits where it normally goes (bottom-left). */
+    legendTop?: boolean;
   };
   /** Isometric-map label nudges on phones, where enlarged labels would collide. */
   compactNudge?: Partial<Record<NoInfer<Id>, [number, number]>>;
