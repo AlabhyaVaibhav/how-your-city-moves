@@ -5,6 +5,7 @@
  * All access goes through RPCs; the table itself is closed to the browser (see supabase/migrations).
  */
 import { SUPABASE } from "../config";
+import { CITY_ID } from "../app/city";
 import type { AreaId, ModeId, Person } from "../app/data";
 import { ensureContribToken, getContribToken } from "./storage";
 
@@ -24,6 +25,7 @@ export async function submitCommute(p: Omit<Person, "id">) {
   if (!SUPABASE.enabled) return;
   await rpc("submit_commute", {
     p_token: ensureContribToken(),
+    p_city: CITY_ID,
     p_home: p.home,
     p_work: p.office,
     p_leave_home: round(p.out, 30),
@@ -57,10 +59,11 @@ export interface CityView {
 }
 
 /** Null when stats are disabled, unreachable, or there isn't enough data yet. */
+/** This city's view. */
 export async function fetchCityView(): Promise<CityView | null> {
   if (!SUPABASE.enabled) return null;
   try {
-    const r = await rpc<CityView | null>("city_view");
+    const r = await rpc<CityView | null>("city_view", { p_city: CITY_ID });
     return r && Array.isArray(r.hours) && r.hours.length === 24 && Array.isArray(r.slots) && r.slots.length === 48 ? r : null;
   } catch { return null; }
 }

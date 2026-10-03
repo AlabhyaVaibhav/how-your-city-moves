@@ -13,10 +13,27 @@ import { store } from "./store";
 import { once, track } from "../lib/analytics";
 import { fetchCityView, submitCommute, type CityView } from "../lib/cityStats";
 import { SUPABASE } from "../config";
+import { CITY, CITY_ID, switchCity } from "./city";
+import { DEFAULT_CITY, isCityId } from "../cities";
 
 const $ = <T extends Element>(id: string) => document.getElementById(id) as unknown as T;
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const compact = matchMedia("(max-width: 640px)");
+
+/* ---------- the city on show ---------- */
+const citySel = $<HTMLSelectElement>("citySel");
+citySel.value = CITY_ID;
+citySel.addEventListener("change", () => {
+  if (!isCityId(citySel.value) || citySel.value === CITY_ID) return;
+  track("city_switched", { city: citySel.value });
+  switchCity(citySel.value);
+});
+// the page is built for the default city; other cities rename it here
+if (CITY_ID !== DEFAULT_CITY) {
+  const name = `How ${CITY.name} moves`;
+  $("siteName").textContent = name;
+  document.title = name;
+}
 
 const clock = new Clock(!reduce);
 let curSnap: Snapshot = {};
@@ -85,15 +102,16 @@ compact.addEventListener("change", () => map.build(store.people, compact.matches
 /* ---------- isometric drawing or the real, to-scale map ---------- */
 const viewBtn = $<HTMLButtonElement>("realMap"), mapSvg = $<SVGSVGElement>("map");
 const LABELS: Record<MapView, string> = {
-  iso: "Isometric map of Bangalore landmarks with commuters moving between them",
-  real: "To-scale map of Bengaluru with main roads, the Outer Ring Road and lakes, and commuters moving between neighbourhoods",
+  iso: `Isometric map of ${CITY.name} landmarks with commuters moving between them`,
+  real: `To-scale map of ${CITY.official} with main roads, ${CITY.real.ringLabel} and lakes, and commuters moving between neighbourhoods`,
 };
+mapSvg.setAttribute("aria-label", LABELS.iso);
 viewBtn.addEventListener("click", async () => {
   const view: MapView = viewBtn.getAttribute("aria-pressed") === "true" ? "iso" : "real";
   viewBtn.disabled = true;
   try {
     // the map's line art (~60 KB) only loads when someone asks for it
-    if (view === "real") map.setBasemap((await import("./basemap.json")).default);
+    if (view === "real") map.setBasemap(await CITY.basemap());
   } catch { /* still usable without the roads: markers and routes are drawn from coordinates */ }
   viewBtn.disabled = false;
   viewBtn.setAttribute("aria-pressed", String(view === "real"));

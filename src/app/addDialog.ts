@@ -1,6 +1,7 @@
 /* The "Add yourself" dialog. */
 import { NODES, funnyName, type AreaId, type ModeId, type Person } from "./data";
 import { toMin } from "./sim";
+import { CITY } from "./city";
 
 export interface AddResult {
   person: Omit<Person, "id"> & { mode: ModeId };
@@ -29,7 +30,7 @@ function fillSelects(home: HTMLSelectElement, office: HTMLSelectElement) {
       s.appendChild(og);
     }
   });
-  home.value = "koramangala"; office.value = "mgroad";
+  home.value = CITY.defaults.home; office.value = CITY.defaults.office;
 }
 
 export function initAddDialog(hooks: DialogHooks, cityStatsEnabled: boolean) {

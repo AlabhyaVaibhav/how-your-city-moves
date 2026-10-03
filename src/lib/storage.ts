@@ -1,8 +1,13 @@
 /* Everything this site keeps in the browser. Keys are unchanged from the prototype so existing data carries over. */
 import { isAreaId, isModeId, type Person } from "../app/data";
+import { CITY, CITY_KEY } from "../app/city";
+import { CITIES } from "../cities";
 
 export const KEYS = {
-  people: "blr-moves-v2",
+  /** This city's commuters. Each city has its own key; Bangalore's is the original one. */
+  people: CITY.peopleKey,
+  /** The last city picked. */
+  city: CITY_KEY,
   names: "blr-moves-names",
   /** Random ID used only to let you delete what you shared to the city-wide stats. */
   contrib: "blr-moves-contrib",
@@ -40,7 +45,7 @@ export function ensureContribToken(): string {
 
 /** Remove every key this site has written, except any listed in `keep`. */
 export function clearAll(keep: string[] = []) {
-  for (const k of Object.values(KEYS)) {
+  for (const k of new Set([...Object.values(KEYS), ...Object.values(CITIES).map(c => c.peopleKey)])) {
     if (keep.includes(k)) continue;
     try { localStorage.removeItem(k); } catch { /* ignore */ }
   }

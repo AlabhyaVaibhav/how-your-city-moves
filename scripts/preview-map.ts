@@ -1,12 +1,14 @@
 /*
  * Renders the whole map to PNGs so you can check a new area or landmark for collisions:
  *   npm run preview:map -- [outdir] [iso|real]   → map-<view>-full.png and map-<view>-compact.png (phone crop)
+ * Shows Bangalore; set HYCM_CITY=<city> for another city.
  */
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { parseHTML } from "linkedom";
 import { Resvg } from "@resvg/resvg-js";
 import { SAMPLE } from "../src/app/data";
+import { CITY_ID } from "../src/app/city";
 import { CityMap, type MapView } from "../src/app/map";
 import { ease, snapshot } from "../src/app/sim";
 import { CARD, NS } from "../src/app/iso";
@@ -22,7 +24,7 @@ for (const compact of [false, true]) {
   const svg = document.createElementNS(NS, "svg");
   const people = SAMPLE.map((p, i) => ({ ...p, id: "s" + i }));
   const map = new CityMap(svg as unknown as SVGSVGElement, { districtHtml: () => "" });
-  map.setBasemap(JSON.parse(readFileSync(join(import.meta.dirname, "../src/app/basemap.json"), "utf8")));
+  map.setBasemap(JSON.parse(readFileSync(join(import.meta.dirname, "../src/cities", CITY_ID, "basemap.json"), "utf8")));
   map.build(people, compact, view);
   map.update(people, snapshot(people, 540), snapshot(people, 570), ease(.5), snapshot(people, 570));
   svg.lastElementChild?.remove(); // invisible hover zones

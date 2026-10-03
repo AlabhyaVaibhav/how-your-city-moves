@@ -1,20 +1,14 @@
 /* Drawing for the to-scale map: OpenStreetMap line art, area markers, labels, scale bar and credits. */
 import { NODES, type AreaId } from "./data";
+import { CITY } from "./city";
+import type { Basemap } from "../cities/types";
 import { CARD, INK, OR, dust, el, type Pt } from "./iso";
 import { PX_PER_KM, VIEW_REAL, VIEW_REAL_COMPACT, crowKm, isOffMap, truePos } from "./geo";
 import { rng } from "./sim";
 
-export interface Basemap { boundary: string; roads: string; orr: string; nice: string; metro: string; lakes: string }
+export type { Basemap } from "../cities/types";
 
-type Anchor = [dx: number, dy: number, anchor: "start" | "middle" | "end"];
-const R: Anchor = [11, 4, "start"], L: Anchor = [-11, 4, "end"], B: Anchor = [0, 21, "middle"], T: Anchor = [0, -12, "middle"];
-/** Which side of its marker each label sits, chosen so nothing overlaps. */
-const LABEL: Record<AreaId, Anchor> = {
-  manyata: R, mgroad: L, indiranagar: R, jpnagar: L, koramangala: R, marathahalli: R, whitefield: R, hsr: B,
-  electronic: R, kalyannagar: R, peenya: L, yeswanthpur: B, dobaspet: R, jayanagar: L, bommasandra: L,
-  chandapura: R, attibele: R, sarjapur: R, varthur: R, krpuram: R,
-};
-const LABEL_COMPACT: Partial<Record<AreaId, Anchor>> = { peenya: T, attibele: L, whitefield: T, varthur: B };
+const LABEL = CITY.real.labels, LABEL_COMPACT = CITY.real.labelsCompact ?? {};
 
 export const realView = (compact: boolean) => compact ? VIEW_REAL_COMPACT : VIEW_REAL;
 
@@ -37,7 +31,7 @@ export function drawRealBackdrop(svg: Element, map: Basemap | null, compact: boo
   el("path", { d: map.boundary, stroke: INK, "stroke-opacity": .3, "stroke-width": 1.2, "stroke-dasharray": "5 5" }, g);
   el("path", { d: map.roads, stroke: INK, "stroke-opacity": .11, "stroke-width": .9 }, g);
   el("path", { d: map.metro, stroke: INK, "stroke-opacity": .28, "stroke-width": 1, "stroke-dasharray": "1 3" }, g);
-  el("path", { d: map.orr + map.nice, stroke: INK, "stroke-opacity": .3, "stroke-width": 2.2 }, g);
+  el("path", { d: map.ring, stroke: INK, "stroke-opacity": .3, "stroke-width": 2.2 }, g);
 }
 
 /** Scale bar, north arrow, a small legend and the OpenStreetMap credit (required by its licence). */
@@ -62,7 +56,7 @@ export function drawRealChrome(svg: Element, compact: boolean) {
   if (compact) return;
   // legend
   const lx = v.x + 24, ly = v.y + v.h - 118;
-  ([["Outer Ring Road, NICE Road", { "stroke-width": 2.2, "stroke-opacity": .45 }], ["Main roads", { "stroke-width": .9, "stroke-opacity": .3 }],
+  ([[CITY.real.ringLabel, { "stroke-width": 2.2, "stroke-opacity": .45 }], ["Main roads", { "stroke-width": .9, "stroke-opacity": .3 }],
     ["Metro", { "stroke-width": 1, "stroke-opacity": .5, "stroke-dasharray": "1 3" }], ["City limits", { "stroke-width": 1.2, "stroke-opacity": .45, "stroke-dasharray": "5 5" }]] as const)
     .forEach(([t, a], i) => {
       el("line", { x1: lx, y1: ly + i * 18, x2: lx + 26, y2: ly + i * 18, stroke: INK, "stroke-linecap": "round", ...a }, g);
@@ -94,8 +88,8 @@ export function drawRealLabels(svg: Element, at: (id: AreaId) => Pt, compact: bo
     const t = el("text", { x, y, "text-anchor": anchor, fill: INK, "font-family": FONT, "font-size": 13 * s, "font-weight": 500, stroke: CARD, "stroke-width": 4 * s, "paint-order": "stroke", "stroke-linejoin": "round" }, labels);
     const name = compact ? NODES[id].short : NODES[id].label;
     // off-map areas say how far out they really are
-    const far = Math.round(crowKm(id, "mgroad"));
-    t.textContent = !isOffMap(id) ? name : compact ? `${name}, ${far} km` : `${name}, ${far} km from MG Road`;
+    const far = Math.round(crowKm(id, CITY.centre));
+    t.textContent = !isOffMap(id) ? name : compact ? `${name}, ${far} km` : `${name}, ${far} km from ${NODES[CITY.centre].label}`;
     counts[id] = el("text", { x, y: y + 14 * s, "text-anchor": anchor, fill: OR, "font-family": "Geist Mono, monospace", "font-size": 10 * s, stroke: CARD, "stroke-width": 3 * s, "paint-order": "stroke" }, labels);
   }
   return counts;
