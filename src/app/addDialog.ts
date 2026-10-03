@@ -1,9 +1,9 @@
 /* The "Add yourself" dialog. */
-import { NODES, funnyName, type AreaId, type Person } from "./data";
+import { NODES, funnyName, type AreaId, type ModeId, type Person } from "./data";
 import { toMin } from "./sim";
 
 export interface AddResult {
-  person: Omit<Person, "id">;
+  person: Omit<Person, "id"> & { mode: ModeId };
   usedRandomName: boolean;
   shareToCity: boolean;
 }
@@ -35,7 +35,7 @@ function fillSelects(home: HTMLSelectElement, office: HTMLSelectElement) {
 export function initAddDialog(hooks: DialogHooks, cityStatsEnabled: boolean) {
   const dlg = $<HTMLDialogElement>("addDlg"), form = $<HTMLFormElement>("form");
   const name = $<HTMLInputElement>("fName"), home = $<HTMLSelectElement>("fHome"), office = $<HTMLSelectElement>("fOffice");
-  const share = $<HTMLInputElement>("fShare");
+  const share = $<HTMLInputElement>("fShare"), mode = $<HTMLSelectElement>("fMode");
   fillSelects(home, office);
   if (!cityStatsEnabled) $("fShareRow").hidden = true;
 
@@ -59,13 +59,15 @@ export function initAddDialog(hooks: DialogHooks, cityStatsEnabled: boolean) {
   form.addEventListener("submit", e => {
     e.preventDefault();
     const typed = name.value.trim();
-    const person: Omit<Person, "id"> = {
+    const person: AddResult["person"] = {
       name: typed || funnyName(hooks.taken()),
       home: home.value as AreaId, office: office.value as AreaId,
+      // required, so the form can't submit until one is picked
+      mode: mode.value as ModeId,
       out: toMin($<HTMLInputElement>("fOut").value), back: toMin($<HTMLInputElement>("fBack").value),
       mins: Math.min(180, Math.max(5, Number($<HTMLInputElement>("fMins").value) || 45)),
     };
-    name.value = "";
+    name.value = ""; mode.value = "";
     submitted = true;
     dlg.close();
     hooks.onSubmit({ person, usedRandomName: !typed, shareToCity: cityStatsEnabled && share.checked });

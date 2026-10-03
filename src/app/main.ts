@@ -109,7 +109,7 @@ initAddDialog({
   onSubmit: ({ person, usedRandomName, shareToCity }) => {
     const added = store.add(person);
     track("commuter_added", {
-      home_area: person.home, work_area: person.office, commute_bucket: commuteBucket(person.mins),
+      home_area: person.home, work_area: person.office, mode: person.mode, commute_bucket: commuteBucket(person.mins),
       used_random_name: usedRandomName, shared_to_city: shareToCity,
     });
     focus(added.id);

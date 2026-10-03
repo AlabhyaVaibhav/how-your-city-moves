@@ -1,11 +1,11 @@
 /*
  * Opt-in, anonymous, aggregate-only city stats in Supabase.
- * Sends: areas (from the fixed list), leave times rounded to 30 min, commute rounded to 5 min, and a random
+ * Sends: areas (from the fixed list), transport mode (if picked), leave times rounded to 30 min, commute rounded to 5 min, and a random
  * per-browser token so you can delete your rows later. Never a name. Reads come back as 24 hourly counts only.
  * All access goes through RPCs; the table itself is closed to the browser (see supabase/migrations).
  */
 import { SUPABASE } from "../config";
-import type { AreaId, Person } from "../app/data";
+import type { AreaId, ModeId, Person } from "../app/data";
 import { ensureContribToken, getContribToken } from "./storage";
 
 async function rpc<T>(fn: string, body: Record<string, unknown> = {}): Promise<T> {
@@ -29,6 +29,7 @@ export async function submitCommute(p: Omit<Person, "id">) {
     p_leave_home: round(p.out, 30),
     p_leave_work: round(p.back, 30),
     p_mins: Math.min(180, Math.max(5, Math.round(p.mins / 5) * 5)),
+    p_mode: p.mode ?? null,
   });
 }
 
@@ -47,6 +48,8 @@ export interface CityView {
   total: number;
   /** Commuters per route, keyed "home>work" (routes under 3 omitted). */
   routes: Record<string, number>;
+  /** Commuters per transport mode (modes under 3 omitted). Missing before the modes migration. */
+  modes?: Partial<Record<ModeId, number>>;
   /** People on the road in each hour (rush-hours chart). */
   hours: number[];
   /** 48 half-hour slots from 00:00. */

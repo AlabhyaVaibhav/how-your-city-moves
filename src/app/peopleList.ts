@@ -1,5 +1,5 @@
 /* "In the city": the commuter list, show-names toggle, remove and reset. */
-import { NODES, type AreaId, type Person } from "./data";
+import { MODES, MODE_VIA, NODES, type AreaId, type ModeId, type Person } from "./data";
 import type { CitySlot, CityView } from "../lib/cityStats";
 import { hhmm, type Snapshot } from "./sim";
 import { distanceShort } from "./geo";
@@ -44,6 +44,7 @@ export class PeopleList {
     document.getElementById("yoursLabel")!.hidden = !city;
     document.getElementById("routesBox")!.hidden = !city;
     this.renderCount();
+    this.renderModes(city);
     const ul = document.getElementById("routes") as HTMLUListElement;
     this.routeRows = [];
     if (!city) { ul.replaceChildren(); return; }
@@ -66,6 +67,21 @@ export class PeopleList {
     }));
   }
 
+  private renderModes(city: CityView | null) {
+    const ul = document.getElementById("modes") as HTMLUListElement;
+    const rows = Object.entries(city?.modes ?? {}).sort((a, b) => b[1] - a[1]) as [ModeId, number][];
+    document.getElementById("modesBox")!.hidden = !rows.length;
+    const all = rows.reduce((a, [, n]) => a + n, 0);
+    ul.replaceChildren(...rows.map(([mode, n]) => {
+      const li = document.createElement("li");
+      li.innerHTML = `<div class="who"><b></b><i class="bar"></i></div><span class="st"></span>`;
+      li.querySelector("b")!.textContent = MODES[mode];
+      li.querySelector(".st")!.textContent = `${fmt(n)} · ${Math.round(n / all * 100)}%`;
+      li.querySelector<HTMLElement>(".bar")!.style.setProperty("--w", (n / rows[0]![1] * 100).toFixed(1) + "%");
+      return li;
+    }));
+  }
+
   private renderCount() {
     const n = this.mine + (this.city?.total ?? 0);
     this.count.textContent = n === 1 ? "1 person" : fmt(n) + " people";
@@ -81,7 +97,7 @@ export class PeopleList {
       li.tabIndex = 0;
       li.innerHTML = `<div class="who"><b></b><span></span></div><span class="st"></span><button class="x" type="button">×</button>`;
       li.querySelector("b")!.textContent = p.name;
-      li.querySelector(".who span")!.textContent = `${NODES[p.home].label} to ${NODES[p.office].label} · ${distanceShort(p.home, p.office)}, out ${hhmm(p.out)}, back ${hhmm(p.back)}`;
+      li.querySelector(".who span")!.textContent = `${NODES[p.home].label} to ${NODES[p.office].label}${p.mode ? " " + MODE_VIA[p.mode] : ""} · ${distanceShort(p.home, p.office)}, out ${hhmm(p.out)}, back ${hhmm(p.back)}`;
       const x = li.querySelector<HTMLButtonElement>(".x")!;
       x.setAttribute("aria-label", "Remove " + p.name);
       x.addEventListener("click", e => { e.stopPropagation(); this.hooks.onRemove(p.id); });
