@@ -1,7 +1,7 @@
-/* The to-scale ("real") map: a flat projection of Bengaluru into the same frame as the isometric map. */
+/* The to-scale ("real") map: a flat projection of the city into the same frame as the isometric map. */
 import { NODES, type AreaId } from "./data";
 import type { Pt } from "./iso";
-import ROAD_KM from "./roadKm.json";
+import { CITY } from "./city";
 
 /** Frame shared with the isometric map, so switching views doesn't resize the card. */
 export const VIEW_REAL = { x: 0, y: 10, w: 1200, h: 770 };
@@ -9,8 +9,8 @@ export const VIEW_REAL = { x: 0, y: 10, w: 1200, h: 770 };
 export const VIEW_REAL_COMPACT = { x: 300, y: 10, w: 700, h: 770 };
 
 /** Centre of the frame and pixels per km. Equirectangular is plenty at city scale. */
-const LAT0 = 12.9135, LNG0 = 77.65, X0 = 620, Y0 = 380;
-export const PX_PER_KM = 20.7;
+const { lat0: LAT0, lng0: LNG0 } = CITY.real, X0 = 620, Y0 = 380;
+export const PX_PER_KM = CITY.real.pxPerKm;
 const KM_LAT = 110.6, KM_LNG = 111.32 * Math.cos(LAT0 * Math.PI / 180);
 
 export const geo = (lat: number, lng: number): Pt =>
@@ -46,9 +46,9 @@ export function crowKm(a: AreaId, b: AreaId) {
   return 2 * 6371 * Math.asin(Math.sqrt(h));
 }
 
-/** Typical driving distance in km, precomputed from OpenStreetMap with OSRM (`npm run basemap`). */
+/** Typical driving distance in km, precomputed from OpenStreetMap with OSRM (`npm run basemap -- <city>`). */
 export function roadKm(a: AreaId, b: AreaId): number | null {
-  return (ROAD_KM as Record<string, Record<string, number>>)[a]?.[b] ?? null;
+  return CITY.roadKm[a]?.[b] ?? null;
 }
 
 const km = (n: number) => (n < 10 ? n.toFixed(1).replace(/\.0$/, "") : Math.round(n).toString()) + " km";

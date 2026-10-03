@@ -6,6 +6,7 @@ import "../styles/app.css";
 import { SITE } from "../config";
 import { href } from "../lib/paths";
 import { MODES, MODE_IDS, NODES } from "../app/data";
+import { CITIES, CITY_IDS, DEFAULT_CITY } from "../cities";
 const app = {
   "@type": "WebApplication", name: SITE.name, url: SITE.url + "/", description: SITE.description,
   applicationCategory: "VisualizationApplication", operatingSystem: "Any (web browser)", isAccessibleForFree: true,
@@ -18,8 +19,12 @@ const app = {
 <div class="wrap">
   <header class="head">
     <div>
-      <h1>{SITE.name}</h1>
+      <h1 id="siteName">{SITE.name}</h1>
       <p>{SITE.description}</p>
+    </div>
+    <div class="field city-pick" hidden={CITY_IDS.length < 2}>
+      <label for="citySel">City</label>
+      <select id="citySel">{CITY_IDS.map(id => <option value={id} selected={id === DEFAULT_CITY}>{CITIES[id].name}</option>)}</select>
     </div>
   </header>
 

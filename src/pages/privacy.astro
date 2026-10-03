@@ -14,8 +14,9 @@ const events: [string, string][] = [
   ["Opening or closing the Add yourself dialog without adding", "only that it happened"],
   ["Play, pause, dragging the timeline, changing speed", "play or pause, the hour you dragged to (0 to 23), and slow, normal or fast"],
   ["Showing or hiding names", "on or off"],
-  ["Looking at a neighbourhood", "which of the twenty areas, once per visit"],
+  ["Looking at a neighbourhood", "which area, once per visit"],
   ["Switching between the drawing and the real map", "which one you switched to"],
+  ["Switching city", "which city you switched to"],
   ["Sharing", "where you pressed Share (map or footer) and how you shared (share sheet, copy, WhatsApp, X, LinkedIn)"],
   ["Arriving from a shared link", "how the link was shared"],
   ["Clicking a link to another site", "that site's domain name only"],
@@ -34,7 +35,8 @@ const events: [string, string][] = [
     <h2><span class="num">02</span>What you enter stays on your device</h2>
     <p>The commuters you add, their names and times, and whether names are shown are saved in your browser's <code>localStorage</code>. They are not sent to me or to anyone else. The keys are:</p>
     <ul>
-      <li><code>{KEYS.people}</code>: your list of commuters</li>
+      <li><code>{KEYS.people}</code>: your list of commuters (each city has its own list and key)</li>
+      <li><code>{KEYS.city}</code>: the last city you picked, if you've switched city</li>
       <li><code>{KEYS.names}</code>: whether the "Show names" switch is on</li>
       <li><code>{KEYS.contrib}</code>: a random ID, only created if you opt into city-wide stats (see below)</li>
     </ul>
@@ -42,7 +44,7 @@ const events: [string, string][] = [
     <h2 id="city-stats"><span class="num">03</span>City-wide stats (only if you opt in)</h2>
     <p>When you add yourself there's a checkbox, <strong>off by default</strong>, labelled "Add me to the city-wide stats". If you tick it, this is sent to a database run by Supabase in Mumbai, India:</p>
     <ul>
-      <li>the area you live in and the area you work in, chosen from the fixed list of twenty</li>
+      <li>your city, and the area you live in and the area you work in, chosen from that city's fixed list</li>
       <li>how you get there: walk, cycle, bike, car or public transport</li>
       <li>when you leave home and when you leave work, rounded to the nearest half hour</li>
       <li>your commute length, rounded to the nearest 5 minutes</li>

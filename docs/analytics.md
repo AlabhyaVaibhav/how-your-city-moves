@@ -4,7 +4,7 @@ The source of truth is `src/lib/analytics/events.ts`. `track()` is typed against
 or an extra prop fails `npm run build`. Update this file when you change that one.
 
 **Rules:** no cookies, no names, no exact times, no free text, nothing that identifies a person.
-Area values are ids from the fixed list in `src/app/data.ts`.
+Area values are ids from the fixed lists in `src/cities/<city>/index.ts`.
 
 | Event | Props | Fires when | Code |
 |---|---|---|---|
@@ -20,6 +20,7 @@ Area values are ids from the fixed list in `src/app/data.ts`.
 | `names_toggled` | `visible` (bool) | "Show names" switch | `src/app/main.ts` |
 | `district_hovered` | `area` | Neighbourhood tooltip open for 600ms (hover or tap); once per area per page load | `src/app/main.ts` |
 | `map_view_changed` | `view` (`iso` or `real`) | "Real map" switch on the map card | `src/app/main.ts` |
+| `city_switched` | `city` (id from `src/cities/index.ts`, e.g. `bangalore`) | City picker in the page header | `src/app/main.ts` |
 | `data_cleared` | none | "Clear my data" on /privacy | `src/pages/privacy.astro` |
 | `chip_in_clicked` | `amount` (50 / 100 / 150 / 500), `method` (`"upi_app"` / `"copy_id"`) | "Pay with a UPI app" tapped, or UPI ID copied, on /support. Intent only: UPI completion isn't visible to the site | `src/components/ChipIn.astro` |
 | `outbound_click` | `destination` (hostname only, `www.` stripped) | Any link to another host, except share intents | `src/lib/site.ts` |

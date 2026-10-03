@@ -3,6 +3,9 @@
 .head h1{ margin:0; font-weight:600; font-size:clamp(28px,4vw,44px); letter-spacing:-.025em; line-height:1.05; color:var(--head-ink); }
 .head p{ margin:10px 0 0; max-width:52ch; color:var(--head-ink-2); font-size:15px; line-height:1.5; }
 @media (max-width:640px){ .head{ margin-bottom:18px; } .head p{ font-size:14px; } }
+.city-pick{ min-width:160px; }
+.city-pick label{ color:var(--head-ink-2); }
+.city-pick select{ color:var(--head-ink); border-bottom-color:var(--head-ink-2); }
 
 .grid{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; }
 .map-card{ grid-column:1 / -1; }

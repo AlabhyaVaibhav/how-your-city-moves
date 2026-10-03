@@ -1,5 +1,6 @@
 /* The full-width map, isometric or to scale: backdrop, landmarks, labels, routes, commuter dots, district hover zones. */
 import { NODES, type AreaId, type Person } from "./data";
+import { CITY } from "./city";
 import { CARD, INK, K, OR, dust, el, iso, radial, type Pt } from "./iso";
 import { drawLandmarks } from "./landmarks";
 import { areaPos, distanceLong } from "./geo";
@@ -17,10 +18,7 @@ export const VIEW_FULL = { x: 0, y: 10, w: 1200, h: 770 };
 export const VIEW_COMPACT = { x: 90, y: 30, w: 1090, h: 780 };
 const COMPACT_TEXT = 2.5, COMPACT_DOT = 1.8;
 /** Nudges for compact labels that would otherwise collide once enlarged. */
-const COMPACT_NUDGE: Partial<Record<AreaId, [number, number]>> = {
-  whitefield: [30, -8], marathahalli: [-16, 30], indiranagar: [26, -10], koramangala: [-24, 4], jpnagar: [8, 0],
-  jayanagar: [-34, -6], dobaspet: [24, 0], chandapura: [20, 0], krpuram: [-10, 0], varthur: [-10, 0],
-};
+const COMPACT_NUDGE = CITY.compactNudge ?? {};
 
 export interface SceneOpts { compact?: boolean; people?: readonly Person[] }
 

@@ -26,15 +26,18 @@ Use this when you're working inside the how-your-city-moves repository.
 
 Do all of the above, plus:
 
-1. **Data:** add the area to `NODES` in `src/app/data.ts`, **at the end** so the other built-in landmarks keep their drawings. Give it:
+1. **Data:** add the area to `areas` in `src/cities/<city>/index.ts`, **at the end** so the other built-in landmarks keep their drawings. Area ids must be unique across all cities. Give it:
    - `label` and `short` (the phone label)
    - a grid position `g`, placed by eye among its neighbours on the isometric map
    - `ll`: a neighbourhood centroid rounded to 3 decimals, never more precise
    - `kind`: `"home"` or `"office"`
-2. **Database:** add a new migration that adds the id to `areas_known` and `submit_commute`. `tests/areas.test.ts` fails until it does.
-3. **Real map:** run `npm run basemap` to refresh the road-distance table. `tests/geo.test.ts` fails until you do. If the area falls outside the real map's frame, it's pinned to the edge automatically.
-4. **Layout:** check both views with `npm run preview:map -- preview iso` and `npm run preview:map -- preview real`. On phones, adjust `COMPACT_NUDGE` in `src/app/map.ts` or the label sides in `src/app/realMap.ts`.
-5. **Copy:** update the area count on `/support` and `/privacy` ("twenty areas"). `/llms.txt` updates itself.
+   - a label side in `real.labels` (and `real.labelsCompact` if it collides on phones)
+2. **Database:** add a new migration that inserts `(city, id)` into `public.areas`. `tests/areas.test.ts` fails until it does.
+3. **Real map:** run `npm run basemap -- <city>` to refresh the road-distance table. `tests/geo.test.ts` fails until you do. If the area falls outside the real map's frame, it's pinned to the edge automatically.
+4. **Layout:** check both views with `npm run preview:map -- preview iso` and `npm run preview:map -- preview real` (set `HYCM_CITY=<city>` for a city other than Bangalore). On phones, adjust `compactNudge` or the label sides in the city's file.
+5. **Copy:** `/llms.txt` updates itself; check `/support` and `/privacy` for anything that names a count of areas.
 6. **PR:** open a pull request whose description says `Closes #<issue>`.
 
-A whole new city (a different `NODES` set, basemap frame and database scope) isn't supported by the app yet.
+## A new city
+
+Copy `src/cities/bangalore/index.ts` to `src/cities/<city>/index.ts`, fill in its areas, samples, funny names, map centre (`real.lat0`, `real.lng0`, `real.pxPerKm`), OpenStreetMap boundary relation and ring-road pattern, and a new `peopleKey`. Register it in `src/cities/index.ts`, insert its areas into `public.areas` in a migration, and run `npm run basemap -- <city>`. Then draw a landmark for each area as above.
