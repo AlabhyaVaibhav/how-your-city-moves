@@ -16,7 +16,7 @@ export interface EventMap {
   commuter_added: { home_area: AreaId; work_area: AreaId; mode: ModeId; commute_bucket: CommuteBucket; used_random_name: boolean; shared_to_city: boolean };
   commuter_removed: None;
   sample_reset: None;
-  add_dialog_opened: { source: "map_cta" };
+  add_dialog_opened: { source: "map_cta" | "gate" };
   add_dialog_abandoned: None;
   playback_toggled: { state: "play" | "pause" };
   timeline_scrubbed: { hour: number };
@@ -25,6 +25,10 @@ export interface EventMap {
   district_hovered: { area: AreaId };
   map_view_changed: { view: "iso" | "real" };
   city_switched: { city: CityId };
+  /** The "add yours to unlock other cities" pop-up. `detected`: a location was found; `supported`: it's one of our cities. Never the city or IP. */
+  gate_shown: { reason: "first_visit" | "locked" | "picker" | "chip"; detected: boolean; supported: boolean };
+  gate_dismissed: { reason: "first_visit" | "locked" | "picker" | "chip" };
+  gate_submitted: { reason: "first_visit" | "locked" | "picker" | "chip" };
   /** The commute card dialog opened: right after adding someone, or from a row in the list. */
   card_opened: { source: "added" | "list" };
   card_shared: { method: "native" | "download" | "x" | "linkedin" | "whatsapp" | "copy" };

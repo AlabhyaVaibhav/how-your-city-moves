@@ -14,16 +14,21 @@ export const cityPath = (id: CityId) => id === DEFAULT_CITY ? "/" : `/${id}`;
 
 /**
  * On the default city's page, the city to show instead, if any: one asked for with ?city= (older links),
- * else the last one picked. Null to stay.
+ * else the last one picked in the city picker, else (for people who've added a commute) the city we think
+ * they're in. Null to stay.
  */
-export function redirectFor(pageCity: CityId, search: string, saved: string | null): CityId | null {
+export function redirectFor(pageCity: CityId, search: string, saved: string | null, detected: CityId | null = null): CityId | null {
   if (pageCity !== DEFAULT_CITY) return null;
   const asked = new URLSearchParams(search).get("city");
-  const want = isCityId(asked) ? asked : isCityId(saved) ? saved : null;
+  const want = isCityId(asked) ? asked : isCityId(saved) ? saved : detected;
   return want && want !== pageCity ? want : null;
 }
 
-function saved(): string | null {
+/** Whether the default page might still move on: a ?city= or a picked city settles it without a lookup. */
+export const needsLookup = (pageCity: CityId, search: string, saved: string | null) =>
+  pageCity === DEFAULT_CITY && !isCityId(new URLSearchParams(search).get("city")) && !isCityId(saved);
+
+export function savedCity(): string | null {
   try { return localStorage.getItem(CITY_KEY); } catch { return null; }
 }
 function remember(id: CityId) {
@@ -39,20 +44,17 @@ export const CITY_ID: CityId = isCityId(forced) ? forced : isCityId(pageCity) ? 
 export const CITY = CITIES[CITY_ID] as CityDef<AreaId>;
 
 /**
- * Run first on a city page: sends the default page on to the city asked for or last picked, otherwise
- * remembers this one. Returns true if the page is navigating away.
+ * Run first on a city page: sends the default page on to another city if `redirectFor` says so.
+ * Returns true if the page is navigating away.
  */
-export function settleCity(): boolean {
-  const go = redirectFor(CITY_ID, location.search, saved());
-  if (go) {
-    const params = new URLSearchParams(location.search);
-    params.delete("city");
-    const qs = params.toString();
-    location.replace(cityPath(go) + (qs ? "?" + qs : "") + location.hash);
-    return true;
-  }
-  remember(CITY_ID);
-  return false;
+export function settleCity(detected: CityId | null = null): boolean {
+  const go = redirectFor(CITY_ID, location.search, savedCity(), detected);
+  if (!go) return false;
+  const params = new URLSearchParams(location.search);
+  params.delete("city");
+  const qs = params.toString();
+  location.replace(cityPath(go) + (qs ? "?" + qs : "") + location.hash);
+  return true;
 }
 
 /** Remember the city picked, so the default page sends you back to it next time. */

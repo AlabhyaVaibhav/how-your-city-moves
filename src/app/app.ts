@@ -1,5 +1,5 @@
 /* The map page: wires the store, the clock and every view together. Loaded by main.ts. */
-import type { AreaId } from "./data";
+import type { AreaId, Person } from "./data";
 import { Clock, commuteBucket, ease, onRoad, snapshot, speedBucket, type Snapshot } from "./sim";
 import { CityMap, cityDistrictHtml, districtHtml, type MapView } from "./map";
 import { crowdAt } from "./crowd";
@@ -7,23 +7,32 @@ import { Timebar } from "./timebar";
 import { RushChart } from "./rushChart";
 import { PieChart } from "./pieChart";
 import { PeopleList } from "./peopleList";
-import { initAddDialog } from "./addDialog";
+import { initAddDialog, type GateOpts, type GateReason } from "./addDialog";
 import { initCardDialog } from "./cardDialog";
 import { initTilt } from "./tilt";
 import { store } from "./store";
 import { once, track } from "../lib/analytics";
 import { fetchCityView, submitCommute, type CityView } from "../lib/cityStats";
 import { SUPABASE } from "../config";
-import { CITY } from "./city";
+import { CITY, CITY_ID, cityPath } from "./city";
 import { initCityPicker } from "./cityPicker";
-import type { CityId } from "../cities";
+import { CITIES, type CityId } from "../cities";
+import { access, gateSeen, isUnlocked, markContributed, markGateSeen } from "./access";
+import { detectCity } from "../lib/detectCity";
+import { href } from "../lib/paths";
 
 const $ = <T extends Element>(id: string) => document.getElementById(id) as unknown as T;
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const compact = matchMedia("(max-width: 640px)");
 
-/* ---------- the city on show ---------- */
-initCityPicker($("cityPick"), (id: CityId) => track("city_switched", { city: id }));
+/* ---------- the city on show, and which cities are unlocked ---------- */
+let acc = access(CITY_ID);
+const locked = (id: CityId) => !isUnlocked(id, acc);
+const picker = initCityPicker($("cityPick"), {
+  onPick: id => track("city_switched", { city: id }),
+  isLocked: locked,
+  onLocked: id => void openGate("picker", id),
+});
 
 const clock = new Clock(!reduce);
 let curSnap: Snapshot = {};
@@ -112,23 +121,82 @@ viewBtn.addEventListener("click", async () => {
   track("map_view_changed", { view });
 });
 
-initAddDialog({
+let lastAdded: Person | null = null;
+const dialog = initAddDialog({
   taken: () => store.people,
-  onOpen: () => track("add_dialog_opened", { source: "map_cta" }),
-  onAbandon: () => track("add_dialog_abandoned"),
-  onSubmit: ({ person, usedRandomName, shareToCity }) => {
-    const added = store.add(person);
+  onOpen: gate => track("add_dialog_opened", { source: gate ? "gate" : "map_cta" }),
+  onAbandon: gate => {
+    if (gate) { markGateSeen(); track("gate_dismissed", { reason: gate }); }
+    else track("add_dialog_abandoned");
+  },
+  onSubmit: async ({ person, usedRandomName, shareToCity, gate }) => {
+    const added = lastAdded = store.add(person);
     track("commuter_added", {
       home_area: person.home, work_area: person.office, mode: person.mode, commute_bucket: commuteBucket(person.mins),
       used_random_name: usedRandomName, shared_to_city: shareToCity,
     });
-    focus(added.id);
-    setTimeout(() => focus(null), 2600);
-    // the moment people are most likely to share: right after they've added themselves
-    void openCard(added, "added");
+    if (gate) track("gate_submitted", { reason: gate });
+    // the city view is best-effort: whatever happens there, you're logged and everything unlocks
     if (shareToCity) submitCommute(person).then(refreshCity).catch(() => { /* stats are best-effort */ });
+    const wasLocked = !acc.contributed;
+    markContributed();
+    acc = { ...acc, contributed: true };
+    applyLocks();
+    const { city: near } = await detectCity();
+    dialog.showDone(added, {
+      unlocked: wasLocked,
+      detected: near && near !== CITY_ID ? { href: href(cityPath(near)), label: `See ${CITIES[near].name}` } : null,
+    });
+  },
+  // the moment people are most likely to share: right after they've added themselves
+  onCard: () => { if (lastAdded) void openCard(lastAdded, "added"); },
+  onDoneClose: () => {
+    if (!lastAdded) return;
+    const id = lastAdded.id;
+    focus(id);
+    setTimeout(() => focus(null), 4000);
   },
 }, SUPABASE.enabled);
+
+/* ---------- the gate: add yours to unlock the other cities ---------- */
+const unlockBar = $<HTMLElement>("unlockBar");
+function applyLocks() {
+  const here = locked(CITY_ID);
+  unlockBar.hidden = acc.contributed;
+  unlockBar.classList.toggle("locked", here);
+  $("unlockText").textContent = here
+    ? `${CITY.name} is locked. Add your commute to unlock it and every other city.`
+    : "Add your commute to unlock the other cities.";
+  for (const sel of [".grid", ".timebar"]) document.querySelector(sel)?.classList.toggle("is-locked", here);
+  picker.refresh();
+}
+
+async function openGate(reason: GateReason, target?: CityId) {
+  const { city: near, located } = await detectCity();
+  const nearOther = near && near !== CITY_ID ? CITIES[near].name : null;
+  const opts: GateOpts =
+    reason === "locked" ? {
+      reason, title: `${CITY.name} is locked`,
+      message: `Add your commute to see ${CITY.name} and the other cities as well.`,
+      back: { href: href(cityPath(acc.entry)), label: `Back to ${CITIES[acc.entry].name}` },
+    } : reason === "picker" && target ? {
+      reason, title: `Unlock ${CITIES[target].name}`,
+      message: `Fill your details so that you can see ${CITIES[target].name} and the other cities as well.`,
+    } : {
+      reason, title: "See the other cities",
+      message: `Fill your details so that you can see ${nearOther ? nearOther + " and " : ""}the other cities as well.`,
+    };
+  track("gate_shown", { reason, detected: located, supported: !!near });
+  dialog.open(opts);
+}
+
+$("unlockBtn").addEventListener("click", () => void openGate(locked(CITY_ID) ? "locked" : "chip"));
+applyLocks();
+if (!acc.contributed) {
+  // a locked page asks straight away; elsewhere, a first-time visitor gets a moment to see the map first
+  if (locked(CITY_ID)) void openGate("locked");
+  else if (!gateSeen()) setTimeout(() => { if (!document.querySelector("dialog[open]")) void openGate("first_visit"); }, reduce ? 0 : 1800);
+}
 
 initTilt(reduce);
 rebuild();

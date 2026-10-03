@@ -1,5 +1,7 @@
 /* Page chrome shared by every route: reset, cards, brackets, header, footer, buttons, share popover. */
 *,*::before,*::after{ box-sizing:border-box; }
+/* the hidden attribute always wins over a component's own display */
+[hidden]{ display:none !important; }
 html{ scroll-padding-top:env(safe-area-inset-top,0px); -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 body{
   margin:0; min-height:100dvh; display:flex; flex-direction:column;

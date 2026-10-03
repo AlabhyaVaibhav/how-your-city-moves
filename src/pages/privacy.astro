@@ -17,6 +17,7 @@ const events: [string, string][] = [
   ["Looking at a neighbourhood", "which area, once per visit"],
   ["Switching between the drawing and the real map", "which one you switched to"],
   ["Switching city", "which city you switched to"],
+  ["The \"add yours to unlock other cities\" pop-up", "when it's shown, closed or filled in, why it appeared, and whether a city was suggested (yes or no, never which city or your IP address)"],
   ["Commute cards", "that a card was opened, and how it was shared (share sheet, download, X, LinkedIn, WhatsApp, copy). The card itself is made in your browser and never uploaded"],
   ["Sharing", "where you pressed Share (map or footer) and how you shared (share sheet, copy, WhatsApp, X, LinkedIn)"],
   ["Arriving from a shared link", "how the link was shared"],
@@ -40,6 +41,9 @@ const events: [string, string][] = [
       <li><code>{KEYS.city}</code>: the last city you picked, if you've switched city</li>
       <li><code>{KEYS.names}</code>: whether the "Show names" switch is on</li>
       <li><code>{KEYS.contrib}</code>: a random ID, only created if you opt into city-wide stats (see below)</li>
+      <li><code>{KEYS.entry}</code>: the first city page you opened, which stays unlocked</li>
+      <li><code>{KEYS.contributed}</code>: whether you've added a commute, which unlocks every city</li>
+      <li><code>{KEYS.gateSeen}</code>: whether you've closed the "add yours" pop-up, so it doesn't keep coming back</li>
     </ul>
 
     <h2 id="city-stats"><span class="num">03</span>City-wide stats (only if you opt in)</h2>
@@ -74,6 +78,7 @@ const events: [string, string][] = [
 
     <h2><span class="num">05</span>Hosting</h2>
     <p>The site is hosted by <a href="https://vercel.com/legal/privacy-policy" rel="noopener">Vercel</a>. Like any web host, Vercel handles your IP address and browser details to deliver pages and protect against abuse, and may keep short-lived server logs. I don't use those logs to track anyone.</p>
+    <p id="city-lookup">To suggest your city, the page asks the site's own server which city you're probably in. Vercel works this out from your IP address for every request it serves; the site's server reads only the city, matches it against the cities on the site, and sends back that one name or nothing. Your IP address and location aren't stored, logged or passed on by the site, and no other location service is used. The answer is kept in your browser's session storage until you close the tab. It's only a suggestion: it can be wrong (on mobile networks or a VPN, for example), and the site never moves you to another city without you choosing it, except that once you've added a commute, opening the home page takes you to your city.</p>
 
     <h2><span class="num">06</span>Chipping in with UPI</h2>
     <p>If you chip in from the <a href={href("/support#chip-in")}>support page</a>, the payment happens entirely in your UPI app, between your bank and mine. This site never sees your bank details, UPI PIN or whether the payment went through. Like any UPI transfer, I'll see the name and UPI ID your bank shares with the payment. I use that only to keep my own records, and never publish it or add it to the site.</p>

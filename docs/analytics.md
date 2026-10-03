@@ -12,7 +12,7 @@ Area values are ids from the fixed lists in `src/cities/<city>/index.ts`.
 | `commuter_added` | `home_area`, `work_area`, `mode` (`walk`, `cycle`, `bike`, `car`, `public`), `commute_bucket` (`"<30"`, `"30-60"`, `"60+"`), `used_random_name` (bool), `shared_to_city` (bool) | "Add yourself" form submitted | `src/app/app.ts` |
 | `commuter_removed` | none | × on a row in "In the city" | `src/app/app.ts` |
 | `sample_reset` | none | "Reset to sample commuters" | `src/app/app.ts` |
-| `add_dialog_opened` | `source` (`"map_cta"`) | "Add yourself" button on the map card | `src/app/app.ts` |
+| `add_dialog_opened` | `source` (`"map_cta"` or `"gate"`) | "Add yourself" button on the map card | `src/app/app.ts` |
 | `add_dialog_abandoned` | none | Dialog closed without submitting (×, Esc, backdrop) | `src/app/addDialog.ts` → `main.ts` |
 | `playback_toggled` | `state` (`"play"` / `"pause"`) | Play/pause button | `src/app/app.ts` |
 | `timeline_scrubbed` | `hour` (0–23) | Time bar scrubber released (`change` event, so once per drag; once per key press with the keyboard) | `src/app/app.ts` |
@@ -20,6 +20,9 @@ Area values are ids from the fixed lists in `src/cities/<city>/index.ts`.
 | `names_toggled` | `visible` (bool) | "Show names" switch | `src/app/app.ts` |
 | `district_hovered` | `area` | Neighbourhood tooltip open for 600ms (hover or tap); once per area per page load | `src/app/app.ts` |
 | `map_view_changed` | `view` (`iso` or `real`) | "Real map" switch on the map card | `src/app/app.ts` |
+| `gate_shown` | `reason` (`first_visit`, `locked`, `picker`, `chip`), `detected` (bool: a location was found), `supported` (bool: it's one of our cities). Never the city or IP | "Add yours to unlock other cities" pop-up opened | `src/app/app.ts` |
+| `gate_dismissed` | `reason` | Pop-up closed without adding | `src/app/app.ts` |
+| `gate_submitted` | `reason` | A commute added after coming through the pop-up | `src/app/app.ts` |
 | `card_opened` | `source` (`added` or `list`) | Commute card dialog opened: after "Add yourself", or the card button on a row | `src/app/cardDialog.ts` |
 | `card_shared` | `method` (`native`, `download`, `x`, `linkedin`, `whatsapp`, `copy`) | A share action in the commute card dialog | `src/app/cardDialog.ts` |
 | `city_switched` | `city` (id from `src/cities/index.ts`, e.g. `bangalore`) | City picker in the page header | `src/app/app.ts` |

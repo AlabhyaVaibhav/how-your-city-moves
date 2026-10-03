@@ -263,3 +263,28 @@ dialog.card-sheet{ width:min(720px, calc(100vw - 32px)); }
 .people .card-btn:hover,.people .card-btn:focus-visible{ color:var(--orange); }
 @media (pointer:coarse){ .people .card-btn{ min-width:44px; min-height:44px; margin:-10px 0; } }
 @media (prefers-reduced-motion: reduce){ .card-img.loading{ animation:none; } }
+
+/* ---------- unlocking other cities ---------- */
+.unlock-bar{ display:flex; align-items:center; justify-content:space-between; gap:10px 16px; flex-wrap:wrap; margin:-12px 0 18px;
+  padding:10px 12px 10px 16px; border:1px dashed color-mix(in srgb, var(--head-ink) 30%, transparent); border-radius:var(--radius); }
+.unlock-bar p{ margin:0; color:var(--head-ink-2); font-size:14px; }
+.unlock-bar .pill{ color:var(--head-ink); border-color:color-mix(in srgb, var(--head-ink) 35%, transparent); }
+.unlock-bar.locked{ border-style:solid; border-color:var(--orange); }
+.unlock-bar.locked p{ color:var(--head-ink); }
+.grid.is-locked{ filter:blur(7px) saturate(.6); pointer-events:none; user-select:none; }
+.timebar.is-locked{ filter:blur(5px); pointer-events:none; }
+.gate-msg{ margin:10px 0 16px; font-size:17px; line-height:1.45; text-wrap:balance; }
+.gate-cities{ list-style:none; margin:0 0 18px; padding:0; display:flex; flex-wrap:wrap; gap:6px; }
+.gate-cities li{ display:grid; justify-items:center; gap:2px; width:62px; font-size:11px; color:var(--ink-3t); text-align:center; }
+.gate-cities img{ width:40px; height:40px; opacity:.85; }
+.gate-actions{ display:flex; flex-wrap:wrap; gap:8px; }
+.gate-note{ margin:14px 0 0; font-size:12px; color:var(--ink-3t); }
+.done-route{ margin:10px 0 6px; font-size:17px; line-height:1.45; }
+.done-unlock{ display:flex; align-items:center; gap:8px; margin:0 0 18px; color:var(--orange); font-size:14px; }
+.done-unlock svg,.unlock-bar svg{ width:14px; height:14px; flex:none; }
+.city-panel a.locked img{ opacity:.45; }
+.city-panel a.locked b::after{ content:""; display:inline-block; width:10px; height:10px; margin-left:5px; vertical-align:-1px;
+  background:currentColor; opacity:.55;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Crect x='2.5' y='6' width='9' height='6.5' rx='1.5'/%3E%3Cpath d='M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6' fill='none' stroke='black' stroke-width='1.6'/%3E%3C/svg%3E") center/contain no-repeat;
+          mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Crect x='2.5' y='6' width='9' height='6.5' rx='1.5'/%3E%3Cpath d='M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6' fill='none' stroke='black' stroke-width='1.6'/%3E%3C/svg%3E") center/contain no-repeat; }
+@media (prefers-reduced-motion: no-preference){ .grid,.timebar{ transition:filter .4s ease; } }
