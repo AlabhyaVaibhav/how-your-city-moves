@@ -23,6 +23,8 @@ Area values are ids from the fixed lists in `src/cities/<city>/index.ts`.
 | `gate_shown` | `reason` (`first_visit`, `locked`, `picker`, `chip`), `detected` (bool: a location was found), `supported` (bool: it's one of our cities). Never the city or IP | "Add yours to unlock other cities" pop-up opened | `src/app/app.ts` |
 | `gate_dismissed` | `reason` | Pop-up closed without adding | `src/app/app.ts` |
 | `gate_submitted` | `reason` | A commute added after coming through the pop-up | `src/app/app.ts` |
+| `area_suggested` | `city` | A new area suggested in "Wanted areas" (never its name) | `src/app/wantedAreas.ts` |
+| `area_voted` | `city`, `action` (`vote` or `unvote`) | A vote cast or taken back in "Wanted areas" | `src/app/wantedAreas.ts` |
 | `card_opened` | `source` (`added` or `list`) | Commute card dialog opened: after "Add yourself", or the card button on a row | `src/app/cardDialog.ts` |
 | `card_shared` | `method` (`native`, `download`, `x`, `linkedin`, `whatsapp`, `copy`) | A share action in the commute card dialog | `src/app/cardDialog.ts` |
 | `city_switched` | `city` (id from `src/cities/index.ts`, e.g. `bangalore`) | City picker in the page header | `src/app/app.ts` |

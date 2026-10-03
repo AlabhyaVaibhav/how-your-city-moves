@@ -31,6 +31,9 @@ export interface EventMap {
   gate_submitted: { reason: "first_visit" | "locked" | "picker" | "chip" };
   /** The commute card dialog opened: right after adding someone, or from a row in the list. */
   card_opened: { source: "added" | "list" };
+  /** Wanted areas. Never the area's name. */
+  area_suggested: { city: CityId };
+  area_voted: { city: CityId; action: "vote" | "unvote" };
   card_shared: { method: "native" | "download" | "x" | "linkedin" | "whatsapp" | "copy" };
   data_cleared: None;
   /** Intent only: UPI payments happen in the payer's app, so completion can't be seen. */

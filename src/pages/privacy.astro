@@ -18,6 +18,7 @@ const events: [string, string][] = [
   ["Switching between the drawing and the real map", "which one you switched to"],
   ["Switching city", "which city you switched to"],
   ["The \"add yours to unlock other cities\" pop-up", "when it's shown, closed or filled in, why it appeared, and whether a city was suggested (yes or no, never which city or your IP address)"],
+  ["Wanted areas", "which city you suggested an area or voted in, and whether you voted or took a vote back. Never the area's name"],
   ["Commute cards", "that a card was opened, and how it was shared (share sheet, download, X, LinkedIn, WhatsApp, copy). The card itself is made in your browser and never uploaded"],
   ["Sharing", "where you pressed Share (map or footer) and how you shared (share sheet, copy, WhatsApp, X, LinkedIn)"],
   ["Arriving from a shared link", "how the link was shared"],
@@ -40,7 +41,7 @@ const events: [string, string][] = [
       <li><code>{KEYS.people}</code>: your list of commuters (each city has its own list and key)</li>
       <li><code>{KEYS.city}</code>: the last city you picked, if you've switched city</li>
       <li><code>{KEYS.names}</code>: whether the "Show names" switch is on</li>
-      <li><code>{KEYS.contrib}</code>: a random ID, only created if you opt into city-wide stats (see below)</li>
+      <li><code>{KEYS.contrib}</code>: a random ID, only created if you opt into city-wide stats or suggest or vote for an area (see below)</li>
       <li><code>{KEYS.entry}</code>: the first city page you opened, which stays unlocked</li>
       <li><code>{KEYS.contributed}</code>: whether you've added a commute, which unlocks every city</li>
       <li><code>{KEYS.gateSeen}</code>: whether you've closed the "add yours" pop-up, so it doesn't keep coming back</li>
@@ -58,6 +59,9 @@ const events: [string, string][] = [
     <p>Your name, or anything else you type, is <strong>never</strong> sent. Other visitors only see totals: how many people are at home, at work or on each route in each half hour, how many use each route and each way of getting there overall, and how many are on the road in each hour. Any number smaller than 3 is left out, and nothing is shown until at least five commutes exist. Nobody can see individual entries through the site.</p>
     <p>Shared commutes are kept until you delete them (see <a href="#clear">Clear your data</a>) or the project shuts down, at which point they're deleted. Like any server, Supabase may briefly keep technical logs, such as IP addresses, to run and protect its service. See <a href="https://supabase.com/privacy" rel="noopener">Supabase's privacy policy</a>.</p>
     {!SUPABASE.enabled && <p class="muted">City-wide stats are not switched on for this deployment right now, so nothing is sent.</p>}
+
+    <h3 id="wanted-areas">Suggesting and voting for areas</h3>
+    <p>If you suggest an area or vote in "Wanted areas", the city, the area name you typed, and the same random ID are sent to the same database. Area names are shown to everyone on the leaderboard, so only type a place name. Votes are counted per random ID so each browser votes once; nobody can see who voted for what. Suggestions that break the site's terms may be hidden. "Clear my data" below takes back your votes and removes suggestions only you voted for.</p>
 
     <h2><span class="num">04</span>Anonymous usage analytics</h2>
     {provider ? (

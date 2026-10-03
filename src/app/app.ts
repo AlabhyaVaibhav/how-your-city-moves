@@ -9,6 +9,7 @@ import { PieChart } from "./pieChart";
 import { PeopleList } from "./peopleList";
 import { initAddDialog, type GateOpts, type GateReason } from "./addDialog";
 import { initCardDialog } from "./cardDialog";
+import { initWantedAreas } from "./wantedAreas";
 import { initTilt } from "./tilt";
 import { store } from "./store";
 import { once, track } from "../lib/analytics";
@@ -198,6 +199,7 @@ if (!acc.contributed) {
   else if (!gateSeen()) setTimeout(() => { if (!document.querySelector("dialog[open]")) void openGate("first_visit"); }, reduce ? 0 : 1800);
 }
 
+initWantedAreas();
 initTilt(reduce);
 rebuild();
 void refreshCity();
