@@ -44,6 +44,22 @@ export const NODES: Record<AreaId, Area> = RAW_NODES;
 export const AREA_IDS = Object.keys(NODES) as AreaId[];
 export const isAreaId = (v: unknown): v is AreaId => typeof v === "string" && Object.hasOwn(NODES, v);
 
+/** How someone gets to work. Keys are what's stored and sent; keep in step with the modes_known check in supabase/migrations. */
+export const MODES = {
+  walk:   "Walk",
+  cycle:  "Cycle",
+  bike:   "Bike",
+  car:    "Car",
+  public: "Public transport",
+} as const;
+export type ModeId = keyof typeof MODES;
+/** Mode as it reads mid-sentence: "Koramangala to MG Road, by bike". */
+export const MODE_VIA: Record<ModeId, string> = {
+  walk: "on foot", cycle: "by cycle", bike: "by bike", car: "by car", public: "by public transport",
+};
+export const MODE_IDS = Object.keys(MODES) as ModeId[];
+export const isModeId = (v: unknown): v is ModeId => typeof v === "string" && Object.hasOwn(MODES, v);
+
 export interface Person {
   id: string;
   name: string;
@@ -55,15 +71,17 @@ export interface Person {
   mins: number;
   /** Minute of day they leave work. */
   back: number;
+  /** Missing for commuters added before modes existed. */
+  mode?: ModeId;
 }
 
 export const SAMPLE: Omit<Person, "id">[] = [
-  { name: "Anita", home: "koramangala", office: "mgroad",       out: 555, mins: 35, back: 1110 },
-  { name: "Rahul", home: "indiranagar", office: "manyata",      out: 525, mins: 40, back: 1080 },
-  { name: "Divya", home: "hsr",         office: "electronic",   out: 510, mins: 50, back: 1140 },
-  { name: "Kabir", home: "jpnagar",     office: "whitefield",   out: 450, mins: 80, back: 1110 },
-  { name: "Meera", home: "koramangala", office: "marathahalli", out: 570, mins: 45, back: 1170 },
-  { name: "Arjun", home: "hsr",         office: "mgroad",       out: 600, mins: 40, back: 1200 },
+  { name: "Anita", home: "koramangala", office: "mgroad",       out: 555, mins: 35, back: 1110, mode: "bike" },
+  { name: "Rahul", home: "indiranagar", office: "manyata",      out: 525, mins: 40, back: 1080, mode: "car" },
+  { name: "Divya", home: "hsr",         office: "electronic",   out: 510, mins: 50, back: 1140, mode: "public" },
+  { name: "Kabir", home: "jpnagar",     office: "whitefield",   out: 450, mins: 80, back: 1110, mode: "public" },
+  { name: "Meera", home: "koramangala", office: "marathahalli", out: 570, mins: 45, back: 1170, mode: "bike" },
+  { name: "Arjun", home: "hsr",         office: "mgroad",       out: 600, mins: 40, back: 1200, mode: "cycle" },
 ];
 
 export const FUNNY = [

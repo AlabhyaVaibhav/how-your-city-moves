@@ -9,7 +9,7 @@ import { href } from "../lib/paths";
 const provider = ANALYTICS.provider === "none" ? null : PROVIDER_INFO[ANALYTICS.provider];
 const events: [string, string][] = [
   ["Page visits", "which page was opened (home, about, support, privacy, legal, or not found)"],
-  ["Adding a commuter", "the two areas picked from the list, the commute length as a range (under 30, 30 to 60, or over 60 minutes), whether a random name was used, and whether you opted into city-wide stats"],
+  ["Adding a commuter", "the two areas picked from the list, how they get there (walk, cycle, bike, car or public transport), the commute length as a range (under 30, 30 to 60, or over 60 minutes), whether a random name was used, and whether you opted into city-wide stats"],
   ["Removing a commuter, resetting the samples", "only that it happened"],
   ["Opening or closing the Add yourself dialog without adding", "only that it happened"],
   ["Play, pause, dragging the timeline, changing speed", "play or pause, the hour you dragged to (0 to 23), and slow, normal or fast"],
@@ -43,11 +43,12 @@ const events: [string, string][] = [
     <p>When you add yourself there's a checkbox, <strong>off by default</strong>, labelled "Add me to the city-wide stats". If you tick it, this is sent to a database run by Supabase in Mumbai, India:</p>
     <ul>
       <li>the area you live in and the area you work in, chosen from the fixed list of twenty</li>
+      <li>how you get there: walk, cycle, bike, car or public transport</li>
       <li>when you leave home and when you leave work, rounded to the nearest half hour</li>
       <li>your commute length, rounded to the nearest 5 minutes</li>
       <li>a random ID created in your browser. It isn't linked to you; it exists so you can delete what you shared.</li>
     </ul>
-    <p>Your name, or anything else you type, is <strong>never</strong> sent. Other visitors only see totals: how many people are at home, at work or on each route in each half hour, how many use each route overall, and how many are on the road in each hour. Any number smaller than 3 is left out, and nothing is shown until at least five commutes exist. Nobody can see individual entries through the site.</p>
+    <p>Your name, or anything else you type, is <strong>never</strong> sent. Other visitors only see totals: how many people are at home, at work or on each route in each half hour, how many use each route and each way of getting there overall, and how many are on the road in each hour. Any number smaller than 3 is left out, and nothing is shown until at least five commutes exist. Nobody can see individual entries through the site.</p>
     <p>Shared commutes are kept until you delete them (see <a href="#clear">Clear your data</a>) or the project shuts down, at which point they're deleted. Like any server, Supabase may briefly keep technical logs, such as IP addresses, to run and protect its service. See <a href="https://supabase.com/privacy" rel="noopener">Supabase's privacy policy</a>.</p>
     {!SUPABASE.enabled && <p class="muted">City-wide stats are not switched on for this deployment right now, so nothing is sent.</p>}
 

@@ -3,7 +3,7 @@
  * track() only accepts these names and these props (extra keys are a type error).
  * Keep docs/analytics.md in sync when you change this file.
  */
-import type { AreaId } from "../../app/data";
+import type { AreaId, ModeId } from "../../app/data";
 import type { CommuteBucket, SpeedBucket } from "../../app/sim";
 
 export type ShareMethod = "native" | "copy" | "whatsapp" | "x" | "linkedin";
@@ -12,7 +12,7 @@ export type ShareLocation = "map" | "footer";
 type None = Record<string, never>;
 
 export interface EventMap {
-  commuter_added: { home_area: AreaId; work_area: AreaId; commute_bucket: CommuteBucket; used_random_name: boolean; shared_to_city: boolean };
+  commuter_added: { home_area: AreaId; work_area: AreaId; mode: ModeId; commute_bucket: CommuteBucket; used_random_name: boolean; shared_to_city: boolean };
   commuter_removed: None;
   sample_reset: None;
   add_dialog_opened: { source: "map_cta" };
