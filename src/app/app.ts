@@ -15,7 +15,7 @@ import { store } from "./store";
 import { once, track } from "../lib/analytics";
 import { fetchCityView, submitCommute, type CityView } from "../lib/cityStats";
 import { SUPABASE } from "../config";
-import { CITY, CITY_ID, cityPath } from "./city";
+import { CITY, CITY_ID, cityPath, rememberCity } from "./city";
 import { initCityPicker } from "./cityPicker";
 import { CITIES, type CityId } from "../cities";
 import { access, gateSeen, isUnlocked, markContributed, markGateSeen } from "./access";
@@ -32,7 +32,7 @@ const locked = (id: CityId) => !isUnlocked(id, acc);
 const picker = initCityPicker($("cityPick"), {
   onPick: id => track("city_switched", { city: id }),
   isLocked: locked,
-  onLocked: id => void openGate("picker", id),
+  onLocked: id => openGate("picker", id),
 });
 
 const clock = new Clock(!reduce);
@@ -151,6 +151,11 @@ const dialog = initAddDialog({
   },
   // the moment people are most likely to share: right after they've added themselves
   onCard: () => { if (lastAdded) void openCard(lastAdded, "added"); },
+  onGoCity: id => {
+    // add your commute on that city's page: it opens straight on the form
+    rememberCity(id);
+    location.assign(href(cityPath(id)) + "?add=1");
+  },
   onDoneClose: () => {
     if (!lastAdded) return;
     const id = lastAdded.id;
@@ -172,31 +177,41 @@ function applyLocks() {
   picker.refresh();
 }
 
-async function openGate(reason: GateReason, target?: CityId) {
-  const { city: near, located } = await detectCity();
-  const nearOther = near && near !== CITY_ID ? CITIES[near].name : null;
+function openGate(reason: GateReason, target?: CityId) {
+  const city = target ?? CITY_ID;
   const opts: GateOpts =
     reason === "locked" ? {
-      reason, title: `${CITY.name} is locked`,
+      reason, title: `${CITY.name} is locked`, city,
       message: `Add your commute to see ${CITY.name} and the other cities as well.`,
       back: { href: href(cityPath(acc.entry)), label: `Back to ${CITIES[acc.entry].name}` },
     } : reason === "picker" && target ? {
-      reason, title: `Unlock ${CITIES[target].name}`,
+      reason, title: `Unlock ${CITIES[target].name}`, city,
       message: `Fill your details so that you can see ${CITIES[target].name} and the other cities as well.`,
     } : {
-      reason, title: "See the other cities",
-      message: `Fill your details so that you can see ${nearOther ? nearOther + " and " : ""}the other cities as well.`,
+      reason, title: "See the other cities", city,
+      message: "Pick your city and fill in your details, so that you can see the other cities as well.",
     };
-  track("gate_shown", { reason, detected: located, supported: !!near });
+  // open straight away; the city guess fills in when it arrives
   dialog.open(opts);
+  void detectCity().then(({ city: near, located }) => {
+    track("gate_shown", { reason, detected: located, supported: !!near });
+    if (near && (reason === "first_visit" || reason === "chip")) dialog.suggestCity(near);
+  });
 }
 
-$("unlockBtn").addEventListener("click", () => void openGate(locked(CITY_ID) ? "locked" : "chip"));
+$("unlockBtn").addEventListener("click", () => openGate(locked(CITY_ID) ? "locked" : "chip"));
 applyLocks();
-if (!acc.contributed) {
-  // a locked page asks straight away; elsewhere, a first-time visitor gets a moment to see the map first
-  if (locked(CITY_ID)) void openGate("locked");
-  else if (!gateSeen()) setTimeout(() => { if (!document.querySelector("dialog[open]")) void openGate("first_visit"); }, reduce ? 0 : 1800);
+// sent here from another city's pop-up to add a commute: open on the form
+const params = new URLSearchParams(location.search);
+if (params.has("add")) {
+  params.delete("add");
+  history.replaceState(history.state, "", location.pathname + (params.size ? "?" + params : "") + location.hash);
+  dialog.open();
+} else if (!acc.contributed) {
+  void detectCity(); // start the guess now so it's ready when the pop-up is
+  // a locked page asks straight away; elsewhere, a first-time visitor sees the map for a moment first
+  if (locked(CITY_ID)) openGate("locked");
+  else if (!gateSeen()) setTimeout(() => { if (!document.querySelector("dialog[open]")) openGate("first_visit"); }, reduce ? 0 : 600);
 }
 
 initWantedAreas();
