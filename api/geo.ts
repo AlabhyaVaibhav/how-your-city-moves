@@ -3,7 +3,7 @@
  * Reads the location Vercel already attaches to every request (from the visitor's IP) and returns only
  * which of the site's cities that is. The IP and the raw location are never stored, logged or returned.
  */
-import { cityFromGeo } from "../src/lib/geoCity";
+import { cityFromGeo } from "../src/lib/geoCity.js";
 
 export const config = { runtime: "edge" };
 
