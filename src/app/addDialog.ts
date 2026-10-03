@@ -8,6 +8,7 @@ import { NODES, funnyName, isAreaId, type AreaId, type ModeId, type Person } fro
 import { hhmm } from "./sim";
 import { CITY, CITY_ID } from "./city";
 import { enhanceSelect } from "./select";
+import { WEEKDAYS } from "./days";
 import { CITIES, isCityId, type CityId } from "../cities";
 
 /** Small line icons for the transport modes. */
@@ -131,6 +132,16 @@ export function initAddDialog(hooks: DialogHooks, cityStatsEnabled: boolean): Ad
   minsIn.addEventListener("input", paintTimes);
   paintTimes();
 
+  /* ---------- days of the week (optional) ---------- */
+  const dayBtns = [...document.querySelectorAll<HTMLButtonElement>("#fDays .day")], preset = $<HTMLButtonElement>("fWeekdays");
+  let days = 0;
+  const paintDays = () => {
+    for (const b of dayBtns) b.setAttribute("aria-pressed", String(!!(days & Number(b.dataset.bit))));
+    preset.setAttribute("aria-pressed", String(days === WEEKDAYS));
+  };
+  for (const b of dayBtns) b.addEventListener("click", () => { days ^= Number(b.dataset.bit); paintDays(); });
+  preset.addEventListener("click", () => { days = days === WEEKDAYS ? 0 : WEEKDAYS; paintDays(); });
+
   /* ---------- the city row on the gate step ---------- */
   const cityBtns = [...document.querySelectorAll<HTMLButtonElement>("#gateStep [role=radio]")];
   let chosen: CityId = CITY_ID, touched = false;
@@ -212,7 +223,9 @@ export function initAddDialog(hooks: DialogHooks, cityStatsEnabled: boolean): Ad
       out: +outR.value, back: +backR.value,
       mins: Math.min(180, Math.max(5, Number(minsIn.value) || 45)),
     };
+    if (days) person.days = days;
     name.value = ""; mode.value = ""; modeSel.sync();
+    days = 0; paintDays();
     hooks.onSubmit({ person, usedRandomName: !typed, shareToCity: cityStatsEnabled && share.checked, gate: gateReason });
     share.checked = false;
   });

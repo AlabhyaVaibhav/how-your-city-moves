@@ -1,5 +1,6 @@
 /* Everything this site keeps in the browser. Keys are unchanged from the prototype so existing data carries over. */
 import { isAreaId, isModeId, type Person } from "../app/data";
+import { isDays } from "../app/days";
 import { CITY, CITY_KEY } from "../app/city";
 import { CITIES } from "../cities";
 
@@ -33,7 +34,10 @@ export function loadPeople(): Person[] | null {
     const ok = s.filter((p): p is Person => !!p && typeof p === "object" && isAreaId(p.home) && isAreaId(p.office)
       && typeof p.name === "string" && Number.isFinite(p.out) && Number.isFinite(p.back) && Number.isFinite(p.mins));
     // an unknown mode is dropped rather than the whole commuter
-    for (const p of ok) if (p.mode !== undefined && !isModeId(p.mode)) delete p.mode;
+    for (const p of ok) {
+      if (p.mode !== undefined && !isModeId(p.mode)) delete p.mode;
+      if (p.days !== undefined && !isDays(p.days)) delete p.days;
+    }
     return ok.length ? ok : null;
   } catch { return null; }
 }

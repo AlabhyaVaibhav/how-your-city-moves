@@ -36,6 +36,7 @@ export async function submitCommute(p: Omit<Person, "id">) {
     p_leave_work: round(p.back, 30),
     p_mins: Math.min(180, Math.max(5, Math.round(p.mins / 5) * 5)),
     p_mode: p.mode ?? null,
+    p_days: p.days ?? null,
   });
 }
 

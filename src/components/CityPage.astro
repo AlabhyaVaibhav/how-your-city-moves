@@ -7,6 +7,8 @@ import "../styles/app.css";
 import { SITE } from "../config";
 import { href } from "../lib/paths";
 import { MODES, MODE_IDS } from "../app/modes";
+import { DAYS } from "../app/days";
+const DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 import { CITIES, CITY_IDS, DEFAULT_CITY, type CityId } from "../cities";
 import { cityPath } from "../app/city";
 
@@ -200,10 +202,17 @@ const og = city === DEFAULT_CITY ? "/og.png" : `/og/${city}.png`;
       <div class="field"><label for="fMode">Gets there by</label><select id="fMode"><option value="" disabled selected>Pick one</option>{MODE_IDS.map(m => <option value={m}>{MODES[m]}</option>)}</select><p class="field-err" id="modeErr" hidden>Pick how you get there</p></div>
       <div class="field"><label for="fMins">One way (minutes)</label><input type="number" id="fMins" value="45" min="5" max="180" inputmode="numeric" /></div>
     </div>
+    <fieldset class="field days">
+      <legend>Days you travel <small>optional</small></legend>
+      <div class="day-chips" id="fDays">
+        {DAYS.map((d, i) => <button type="button" class="day" aria-pressed="false" data-bit={1 << i} aria-label={DAY_NAMES[i]}>{d}</button>)}
+        <button type="button" class="day-preset" id="fWeekdays" aria-pressed="false">Weekdays</button>
+      </div>
+    </fieldset>
     <div id="fShareRow">
       <label class="check"><input type="checkbox" id="fShare" />
         <span>Add me to the city-wide stats
-          <small>Sends your areas, how you get there and rounded times anonymously. Never your name. <a href={href("/privacy#city-stats")}>What's shared</a></small>
+          <small>Sends your areas, how you get there, your days and rounded times anonymously. Never your name. <a href={href("/privacy#city-stats")}>What's shared</a></small>
         </span>
       </label>
     </div>

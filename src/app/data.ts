@@ -27,6 +27,8 @@ export interface Person {
   back: number;
   /** Missing for commuters added before modes existed. */
   mode?: ModeId;
+  /** Days of the week they travel, as a bitmask (see days.ts). Missing if not given. */
+  days?: number;
 }
 
 export const SAMPLE: Omit<Person, "id">[] = CITY.samples;

@@ -13,7 +13,7 @@ export type ShareLocation = "map" | "footer";
 type None = Record<string, never>;
 
 export interface EventMap {
-  commuter_added: { home_area: AreaId; work_area: AreaId; mode: ModeId; commute_bucket: CommuteBucket; used_random_name: boolean; shared_to_city: boolean };
+  commuter_added: { home_area: AreaId; work_area: AreaId; mode: ModeId; days_count: number; commute_bucket: CommuteBucket; used_random_name: boolean; shared_to_city: boolean };
   commuter_removed: None;
   sample_reset: None;
   add_dialog_opened: { source: "map_cta" | "gate" };

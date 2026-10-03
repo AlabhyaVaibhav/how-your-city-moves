@@ -10,6 +10,7 @@ import { PeopleList } from "./peopleList";
 import { initAddDialog, type GateOpts, type GateReason } from "./addDialog";
 import { initCardDialog } from "./cardDialog";
 import { initWantedAreas } from "./wantedAreas";
+import { dayCount } from "./days";
 import { initTilt } from "./tilt";
 import { store } from "./store";
 import { once, track } from "../lib/analytics";
@@ -133,7 +134,7 @@ const dialog = initAddDialog({
   onSubmit: async ({ person, usedRandomName, shareToCity, gate }) => {
     const added = lastAdded = store.add(person);
     track("commuter_added", {
-      home_area: person.home, work_area: person.office, mode: person.mode, commute_bucket: commuteBucket(person.mins),
+      home_area: person.home, work_area: person.office, mode: person.mode, days_count: person.days ? dayCount(person.days) : 0, commute_bucket: commuteBucket(person.mins),
       used_random_name: usedRandomName, shared_to_city: shareToCity,
     });
     if (gate) track("gate_submitted", { reason: gate });
