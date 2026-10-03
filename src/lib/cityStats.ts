@@ -9,12 +9,16 @@ import { CITY_ID } from "../app/city";
 import type { AreaId, ModeId, Person } from "../app/data";
 import { ensureContribToken, getContribToken } from "./storage";
 
-async function rpc<T>(fn: string, body: Record<string, unknown> = {}): Promise<T> {
+export async function rpc<T>(fn: string, body: Record<string, unknown> = {}): Promise<T> {
   const headers: Record<string, string> = { "Content-Type": "application/json", apikey: SUPABASE.anonKey };
   // legacy anon keys are JWTs and also go in Authorization; new sb_publishable_ keys must not
   if (SUPABASE.anonKey.startsWith("eyJ")) headers.Authorization = "Bearer " + SUPABASE.anonKey;
   const res = await fetch(`${SUPABASE.url}/rest/v1/rpc/${fn}`, { method: "POST", headers, body: JSON.stringify(body) });
-  if (!res.ok) throw new Error(`${fn}: ${res.status}`);
+  if (!res.ok) {
+    // functions raise short codes like "rate_limited"; PostgREST passes them on as `message`
+    const why = await res.json().then((b: { message?: string }) => b?.message ?? "", () => "");
+    throw new Error(`${fn}: ${res.status} ${why}`.trim());
+  }
   const text = await res.text();
   return (text ? JSON.parse(text) : null) as T;
 }

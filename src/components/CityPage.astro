@@ -136,6 +136,26 @@ const og = city === DEFAULT_CITY ? "/og.png" : `/og/${city}.png`;
       </div>
       <button class="resetlink" id="reset" type="button">Reset to sample commuters</button>
     </article>
+
+    <article class="card wanted-card" id="wantedCard" hidden>
+      <div class="card-head"><h2>Wanted areas</h2><span class="num" aria-hidden="true">005</span></div>
+      <div class="wanted">
+        <form class="wanted-form" id="wantForm" novalidate>
+          <p class="wanted-lede">Is your area missing from {C.name}? Suggest it, or vote for one below. The most wanted get drawn onto the map next.</p>
+          <div class="field">
+            <label for="wantName">Area in {C.name}</label>
+            <input id="wantName" maxlength="40" autocomplete="off" enterkeyhint="send" placeholder={`e.g. a neighbourhood or work hub`} aria-describedby="wantStatus" />
+          </div>
+          <button class="add" type="submit">Suggest it</button>
+          <p class="want-status" id="wantStatus" role="status" aria-live="polite"></p>
+        </form>
+        <div class="wanted-board">
+          <p class="list-label">Most wanted</p>
+          <ol class="wanted-list" id="wantList" aria-label={`Most wanted areas in ${C.name}`}></ol>
+          <p class="wanted-empty" id="wantEmpty" hidden>No suggestions yet. Be the first.</p>
+        </div>
+      </div>
+    </article>
   </section>
 </div>
 
