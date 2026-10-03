@@ -6,17 +6,23 @@ import { CITIES } from "../cities";
 export const KEYS = {
   /** This city's commuters. Each city has its own key; Bangalore's is the original one. */
   people: CITY.peopleKey,
-  /** The last city picked. */
+  /** The last city picked in the city picker. */
   city: CITY_KEY,
+  /** The first city page this browser opened; it's always unlocked. */
+  entry: "hycm-entry",
+  /** Set once you've added a commute; unlocks every city. */
+  contributed: "hycm-contributed",
+  /** Set once you've closed the "add yours" pop-up, so it doesn't come back on every visit. */
+  gateSeen: "hycm-gate-seen",
   names: "blr-moves-names",
   /** Random ID used only to let you delete what you shared to the city-wide stats. */
   contrib: "blr-moves-contrib",
 } as const;
 
-function get(key: string): string | null {
+export function get(key: string): string | null {
   try { return localStorage.getItem(key); } catch { return null; }
 }
-function set(key: string, v: string) {
+export function set(key: string, v: string) {
   try { localStorage.setItem(key, v); } catch { /* private mode / storage full: the app still works */ }
 }
 

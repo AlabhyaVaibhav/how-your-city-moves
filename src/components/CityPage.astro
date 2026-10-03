@@ -54,6 +54,11 @@ const og = city === DEFAULT_CITY ? "/og.png" : `/og/${city}.png`;
     </details>
   </header>
 
+  <div class="unlock-bar" id="unlockBar" hidden>
+    <p id="unlockText">Add your commute to unlock the other cities.</p>
+    <button class="pill" id="unlockBtn" type="button"><svg viewBox="0 0 14 14" aria-hidden="true"><rect x="2.5" y="6" width="9" height="6.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>Add yours to unlock other cities</button>
+  </div>
+
   <noscript>
     <p class="noscript">This interactive map needs JavaScript. It animates commuters moving between {C.official} neighbourhoods ({areas.map(n => n.label).join(", ")}) across a day, in 30-minute steps. A plain-text summary is at <a href={href("/llms.txt")}>/llms.txt</a>.</p>
   </noscript>
@@ -136,6 +141,18 @@ const og = city === DEFAULT_CITY ? "/og.png" : `/og/${city}.png`;
 
 <dialog class="sheet" id="addDlg" aria-labelledby="addTitle">
   <div class="card-head"><h2 id="addTitle">Add yourself</h2><button class="x close" id="closeAdd" type="button" aria-label="Close">×</button></div>
+  <div class="gate" id="gateStep" hidden>
+    <p class="gate-msg" id="gateMsg"></p>
+    <ul class="gate-cities" aria-hidden="true">
+      {CITY_IDS.filter(id => id !== city).map(id => <li><img src={href(`/city/${id}.svg`)} alt="" width="40" height="40" /><span>{CITIES[id].name}</span></li>)}
+    </ul>
+    <div class="gate-actions">
+      <button class="cta" id="gateGo" type="button">Add my commute</button>
+      <button class="pill" id="gateLater" type="button">Not now</button>
+      <a class="pill" id="gateBack" href="/" hidden>Back</a>
+    </div>
+    <p class="gate-note">Takes about 20 seconds. It stays in your browser unless you choose to share it.</p>
+  </div>
   <form class="form" id="form">
     <div class="field"><label for="fName">Your name (optional)</label><input id="fName" placeholder="Leave blank for a random one" autocomplete="off" maxlength="40" enterkeyhint="done" /></div>
     <div class="pair">
@@ -159,6 +176,15 @@ const og = city === DEFAULT_CITY ? "/og.png" : `/og/${city}.png`;
     </div>
     <button class="add" type="submit">Add yourself</button>
   </form>
+  <div class="done" id="doneStep" hidden>
+    <p class="done-route" id="doneRoute"></p>
+    <p class="done-unlock" id="doneUnlock"><svg class="open" viewBox="0 0 14 14" aria-hidden="true"><rect x="2.5" y="6" width="9" height="6.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>Other cities are now unlocked.</p>
+    <div class="gate-actions">
+      <button class="cta" id="doneCard" type="button">Get my commute card</button>
+      <a class="pill" id="doneCity" href="/" hidden>See your city</a>
+      <button class="pill" id="doneClose" type="button">Done</button>
+    </div>
+  </div>
 </dialog>
 
 <dialog class="sheet card-sheet" id="cardDlg" aria-labelledby="cardTitle">
