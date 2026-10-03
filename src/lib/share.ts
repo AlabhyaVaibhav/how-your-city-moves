@@ -4,7 +4,8 @@ import { track } from "./analytics";
 import type { ShareLocation, ShareMethod } from "./analytics/events";
 
 const METHODS: ShareMethod[] = ["native", "copy", "whatsapp", "x", "linkedin"];
-const TEXT = "How Bangalore moves: watch the city commute, half an hour at a time.";
+/** "How Pune moves: …" on a city page, the site's name elsewhere. */
+const text = () => `${document.documentElement.dataset.city ? document.title : SITE.name}: watch the city commute, half an hour at a time.`;
 
 /** Canonical page URL plus ?ref=share&m=<method>. */
 export function shareUrl(method: ShareMethod) {
@@ -16,8 +17,8 @@ export function shareUrl(method: ShareMethod) {
 
 function intentUrl(method: "whatsapp" | "x" | "linkedin") {
   const url = shareUrl(method);
-  if (method === "whatsapp") return "https://wa.me/?text=" + encodeURIComponent(TEXT + " " + url);
-  if (method === "x") return "https://x.com/intent/post?text=" + encodeURIComponent(TEXT) + "&url=" + encodeURIComponent(url);
+  if (method === "whatsapp") return "https://wa.me/?text=" + encodeURIComponent(text() + " " + url);
+  if (method === "x") return "https://x.com/intent/post?text=" + encodeURIComponent(text()) + "&url=" + encodeURIComponent(url);
   return "https://www.linkedin.com/sharing/share-offsite/?url=" + encodeURIComponent(url);
 }
 
@@ -97,7 +98,7 @@ export function initShareButton(btn: HTMLElement, location: ShareLocation) {
     track("share_clicked", { location });
     if (useNative()) {
       try {
-        await navigator.share({ title: SITE.name, text: TEXT, url: shareUrl("native") });
+        await navigator.share({ title: document.title, text: text(), url: shareUrl("native") });
         track("share_completed", { method: "native" });
       } catch (err) {
         // AbortError = user cancelled: no event. Anything else: offer the popover instead.

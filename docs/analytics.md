@@ -9,18 +9,20 @@ Area values are ids from the fixed lists in `src/cities/<city>/index.ts`.
 | Event | Props | Fires when | Code |
 |---|---|---|---|
 | `pageview` | (URL, sent by the provider) | Every page load: home, about, support, privacy, legal, 404 | `src/lib/site.ts` → `page()` |
-| `commuter_added` | `home_area`, `work_area`, `mode` (`walk`, `cycle`, `bike`, `car`, `public`), `commute_bucket` (`"<30"`, `"30-60"`, `"60+"`), `used_random_name` (bool), `shared_to_city` (bool) | "Add yourself" form submitted | `src/app/main.ts` |
-| `commuter_removed` | none | × on a row in "In the city" | `src/app/main.ts` |
-| `sample_reset` | none | "Reset to sample commuters" | `src/app/main.ts` |
-| `add_dialog_opened` | `source` (`"map_cta"`) | "Add yourself" button on the map card | `src/app/main.ts` |
+| `commuter_added` | `home_area`, `work_area`, `mode` (`walk`, `cycle`, `bike`, `car`, `public`), `commute_bucket` (`"<30"`, `"30-60"`, `"60+"`), `used_random_name` (bool), `shared_to_city` (bool) | "Add yourself" form submitted | `src/app/app.ts` |
+| `commuter_removed` | none | × on a row in "In the city" | `src/app/app.ts` |
+| `sample_reset` | none | "Reset to sample commuters" | `src/app/app.ts` |
+| `add_dialog_opened` | `source` (`"map_cta"`) | "Add yourself" button on the map card | `src/app/app.ts` |
 | `add_dialog_abandoned` | none | Dialog closed without submitting (×, Esc, backdrop) | `src/app/addDialog.ts` → `main.ts` |
-| `playback_toggled` | `state` (`"play"` / `"pause"`) | Play/pause button | `src/app/main.ts` |
-| `timeline_scrubbed` | `hour` (0–23) | Time bar scrubber released (`change` event, so once per drag; once per key press with the keyboard) | `src/app/main.ts` |
-| `speed_changed` | `speed_bucket` (`"slow"` / `"normal"` / `"fast"`, thirds of the slider) | Speed slider released | `src/app/main.ts` |
-| `names_toggled` | `visible` (bool) | "Show names" switch | `src/app/main.ts` |
-| `district_hovered` | `area` | Neighbourhood tooltip open for 600ms (hover or tap); once per area per page load | `src/app/main.ts` |
-| `map_view_changed` | `view` (`iso` or `real`) | "Real map" switch on the map card | `src/app/main.ts` |
-| `city_switched` | `city` (id from `src/cities/index.ts`, e.g. `bangalore`) | City picker in the page header | `src/app/main.ts` |
+| `playback_toggled` | `state` (`"play"` / `"pause"`) | Play/pause button | `src/app/app.ts` |
+| `timeline_scrubbed` | `hour` (0–23) | Time bar scrubber released (`change` event, so once per drag; once per key press with the keyboard) | `src/app/app.ts` |
+| `speed_changed` | `speed_bucket` (`"slow"` / `"normal"` / `"fast"`, thirds of the slider) | Speed slider released | `src/app/app.ts` |
+| `names_toggled` | `visible` (bool) | "Show names" switch | `src/app/app.ts` |
+| `district_hovered` | `area` | Neighbourhood tooltip open for 600ms (hover or tap); once per area per page load | `src/app/app.ts` |
+| `map_view_changed` | `view` (`iso` or `real`) | "Real map" switch on the map card | `src/app/app.ts` |
+| `card_opened` | `source` (`added` or `list`) | Commute card dialog opened: after "Add yourself", or the card button on a row | `src/app/cardDialog.ts` |
+| `card_shared` | `method` (`native`, `download`, `x`, `linkedin`, `whatsapp`, `copy`) | A share action in the commute card dialog | `src/app/cardDialog.ts` |
+| `city_switched` | `city` (id from `src/cities/index.ts`, e.g. `bangalore`) | City picker in the page header | `src/app/app.ts` |
 | `data_cleared` | none | "Clear my data" on /privacy | `src/pages/privacy.astro` |
 | `chip_in_clicked` | `amount` (50 / 100 / 150 / 500), `method` (`"upi_app"` / `"copy_id"`) | "Pay with a UPI app" tapped, or UPI ID copied, on /support. Intent only: UPI completion isn't visible to the site | `src/components/ChipIn.astro` |
 | `outbound_click` | `destination` (hostname only, `www.` stripped) | Any link to another host, except share intents | `src/lib/site.ts` |

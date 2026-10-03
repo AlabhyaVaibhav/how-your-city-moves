@@ -7,10 +7,10 @@ import { SITE } from "../config";
 import { href } from "../lib/paths";
 const bugIssue = `${SITE.repo}/issues/new?template=bug_report.yml`;
 const ideaIssue = `${SITE.repo}/issues/new`;
-const bugSubject = encodeURIComponent("Bug: How Bangalore moves");
+const bugSubject = encodeURIComponent("Bug: How your city moves");
 const bugBody = encodeURIComponent("What happened:\n\nWhat you expected:\n\nSteps to reproduce:\n1.\n2.\n\nDevice and browser:\n");
 ---
-<Base title="Support" description="Get help with How Bangalore moves, send feedback, or report a bug.">
+<Base title="Support" description="Get help with How your city moves, send feedback, or report a bug.">
 <div class="wrap page-wrap">
   <PageCard title="Support" num="006" lede="Stuck, curious, or found something broken? Here's how to reach me.">
     <h2><span class="num">01</span>Get help or give feedback</h2>
@@ -45,7 +45,7 @@ const bugBody = encodeURIComponent("What happened:\n\nWhat you expected:\n\nStep
       </details>
       <details>
         <summary>Why doesn't my area appear in the list?</summary>
-        <p>The map has twenty places for now, chosen to keep the drawing readable. I'd like to add more. If yours is missing, <a href={ideaIssue} rel="noopener">request it on GitHub</a> or email me. The most-asked-for areas go in first.</p>
+        <p>Each city has 11 to 20 places, chosen to keep the drawing readable. If your area or your city is missing, <a href={ideaIssue} rel="noopener">request it on GitHub</a> or email me. The most-asked-for areas go in first.</p>
       </details>
       <details>
         <summary>Is this real traffic data?</summary>

@@ -21,23 +21,32 @@ interface Props {
   noindex?: boolean;
   /** Extra schema.org nodes for this page (merged into the site-wide JSON-LD graph). */
   jsonLd?: Record<string, unknown>[];
+  /** City map pages: which city, read by the app at load. */
+  city?: string;
+  /** The whole <title>, used as is (city pages: "How Pune moves"). */
+  pageTitle?: string;
+  /** Link-preview image path and its description. */
+  ogImage?: string;
+  ogAlt?: string;
 }
-const { title, description = SITE.description, home = false, noindex = false, jsonLd = [] } = Astro.props;
-const fullTitle = title ? `${title} · ${SITE.name}` : SITE.name;
+const { title, description = SITE.description, home = false, noindex = false, jsonLd = [], city, pageTitle,
+  ogImage: ogPath = "/og.png", ogAlt = "An isometric line drawing of city landmarks on a charcoal background, with commuters moving between them." } = Astro.props;
+const fullTitle = pageTitle ?? (title ? `${title} · ${SITE.name}` : SITE.name);
+const shareTitle = pageTitle ?? title ?? SITE.name;
 const canonical = new URL(Astro.url.pathname.replace(/(.)\/$/, "$1"), SITE.url).toString();
-const ogImage = new URL(href("/og.png"), SITE.url).toString();
+const ogImage = new URL(href(ogPath), SITE.url).toString();
 // Structured data so search engines and AI agents can tell what the site is and who made it
 const person = { "@type": "Person", "@id": `${SITE.url}/about#person`, name: SITE.owner, url: `${SITE.url}/about`, jobTitle: "Product manager",
   homeLocation: { "@type": "Place", name: "Bengaluru, India" }, sameAs: [SITE.linkedin, SITE.repo.replace(/\/[^/]+$/, "")] };
 const ld = { "@context": "https://schema.org", "@graph": [
   { "@type": "WebSite", "@id": `${SITE.url}/#website`, url: `${SITE.url}/`, name: SITE.name, description: SITE.description, inLanguage: "en-IN", publisher: { "@id": person["@id"] } },
-  { "@type": "WebPage", url: canonical, name: title ?? SITE.name, description, isPartOf: { "@id": `${SITE.url}/#website` }, inLanguage: "en-IN" },
+  { "@type": "WebPage", url: canonical, name: shareTitle, description, isPartOf: { "@id": `${SITE.url}/#website` }, inLanguage: "en-IN" },
   person,
   ...jsonLd,
 ] };
 ---
 <!doctype html>
-<html lang="en-IN">
+<html lang="en-IN" data-city={city}>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -55,19 +64,19 @@ const ld = { "@context": "https://schema.org", "@graph": [
 
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content={SITE.name} />
-  <meta property="og:title" content={title ?? SITE.name} />
+  <meta property="og:title" content={shareTitle} />
   <meta property="og:description" content={description} />
   <meta property="og:url" content={canonical} />
   <meta property="og:image" content={ogImage} />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="An isometric line drawing of Bangalore landmarks on a charcoal background, with commuters moving between them." />
+  <meta property="og:image:alt" content={ogAlt} />
   <meta property="og:locale" content="en_IN" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content={title ?? SITE.name} />
+  <meta name="twitter:title" content={shareTitle} />
   <meta name="twitter:description" content={description} />
   <meta name="twitter:image" content={ogImage} />
-  <meta name="twitter:image:alt" content="An isometric line drawing of Bangalore landmarks on a charcoal background." />
+  <meta name="twitter:image:alt" content={ogAlt} />
   <link rel="sitemap" type="application/xml" href={href("/sitemap.xml")} />
   <script type="application/ld+json" set:html={JSON.stringify(ld)} />
   <slot name="head" />

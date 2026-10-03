@@ -17,6 +17,7 @@ const events: [string, string][] = [
   ["Looking at a neighbourhood", "which area, once per visit"],
   ["Switching between the drawing and the real map", "which one you switched to"],
   ["Switching city", "which city you switched to"],
+  ["Commute cards", "that a card was opened, and how it was shared (share sheet, download, X, LinkedIn, WhatsApp, copy). The card itself is made in your browser and never uploaded"],
   ["Sharing", "where you pressed Share (map or footer) and how you shared (share sheet, copy, WhatsApp, X, LinkedIn)"],
   ["Arriving from a shared link", "how the link was shared"],
   ["Clicking a link to another site", "that site's domain name only"],
@@ -24,13 +25,13 @@ const events: [string, string][] = [
   ["Pressing a Chip in button", "the amount you picked (₹50, ₹100, ₹150 or ₹500) and whether you opened a UPI app or copied the UPI ID. Not whether you paid."],
 ];
 ---
-<Base title="Privacy" description="What How Bangalore moves stores, what it measures, and how to clear it.">
+<Base title="Privacy" description="What How your city moves stores, what it measures, and how to clear it.">
 <div class="wrap page-wrap">
   <PageCard title="Privacy" num="007" lede="Short version: what you type stays in your browser. There are no accounts and no cookies.">
 
     <h2><span class="num">01</span>Who's responsible</h2>
     <p>{SITE.name} is a personal, non-commercial project run by {SITE.owner} in Bengaluru, India. Write to <a href={`mailto:${SITE.email}`}>{SITE.email}</a> about anything on this page. That address is also the contact for privacy complaints (grievances).</p>
-    <p>The site is built for people in India, mostly in Bengaluru. It's designed to follow India's Digital Personal Data Protection Act, 2023 by avoiding personal data wherever possible.</p>
+    <p>The site is run from India and built mostly for people in Indian cities, though anyone can use it. It's designed to follow India's Digital Personal Data Protection Act, 2023 by avoiding personal data wherever possible, which also keeps it simple for visitors elsewhere.</p>
 
     <h2><span class="num">02</span>What you enter stays on your device</h2>
     <p>The commuters you add, their names and times, and whether names are shown are saved in your browser's <code>localStorage</code>. They are not sent to me or to anyone else. The keys are:</p>

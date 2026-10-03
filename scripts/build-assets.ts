@@ -1,6 +1,7 @@
 /*
  * Renders public/og.png (1200×630) and the README banner docs/banner.png (1600×560) from the real map
- * drawing code, plus the favicon set.
+ * drawing code, plus the favicon set. With HYCM_CITY=<city> it renders only that city's link preview,
+ * public/og/<city>.png.
  * Run with `npm run assets` after changing the map, landmarks or mark. Output is committed.
  */
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -11,6 +12,10 @@ import { SAMPLE } from "../src/app/data";
 import { CityMap } from "../src/app/map";
 import { ease, snapshot } from "../src/app/sim";
 import { CARD, INK, NS, OR } from "../src/app/iso";
+import { CITY, CITY_ID } from "../src/app/city";
+import { DEFAULT_CITY } from "../src/cities";
+
+const TITLE = (CITY.title ?? `How ${CITY.name} moves`).replace(/ moves$/, "");
 
 const fontDir = join(import.meta.dirname, "../node_modules/geist/dist/fonts");
 const fontFiles = [
@@ -66,7 +71,7 @@ const bracket = (x: number, y: number, dx: number, dy: number) =>
 // spliced in as text: linkedom parses self-closing SVG tags as HTML and would nest them
 const overlay = [
   bracket(36, 36, 1, 1), bracket(W - 36, 36, -1, 1), bracket(36, H - 36, 1, -1), bracket(W - 36, H - 36, -1, -1),
-  `<text x="72" y="116" font-family="Geist" font-weight="600" font-size="54" letter-spacing="-1.4" fill="${INK}">How Bangalore</text>`,
+  `<text x="72" y="116" font-family="Geist" font-weight="600" font-size="54" letter-spacing="-1.4" fill="${INK}">${TITLE}</text>`,
   `<text x="72" y="176" font-family="Geist" font-weight="600" font-size="54" letter-spacing="-1.4" fill="${INK}">moves</text>`,
   `<text x="72" y="222" font-family="Geist" font-size="21" fill="${INK}" fill-opacity=".62">Watch the city commute,</text>`,
   `<text x="72" y="250" font-family="Geist" font-size="21" fill="${INK}" fill-opacity=".62">half an hour at a time.</text>`,
@@ -74,8 +79,12 @@ const overlay = [
   `<text x="96" y="${H - 70}" font-family="Geist Mono" font-size="17" fill="${OR}">09:15 · day 1</text>`,
 ].join("");
 
-writeFileSync(out("og.png"), png(root.outerHTML.replace(/<\/svg>$/, overlay + "</svg>"), W));
-console.log("wrote public/og.png");
+const ogFile = CITY_ID === DEFAULT_CITY ? "og.png" : `og/${CITY_ID}.png`;
+mkdirSync(out("og"), { recursive: true });
+writeFileSync(out(ogFile), png(root.outerHTML.replace(/<\/svg>$/, overlay + "</svg>"), W));
+console.log("wrote public/" + ogFile);
+// other cities only need their link preview
+if (CITY_ID !== DEFAULT_CITY) process.exit(0);
 
 /* ---------- README banner: title on the left, the whole map on the right ---------- */
 const BW = 1600, BH = 560;

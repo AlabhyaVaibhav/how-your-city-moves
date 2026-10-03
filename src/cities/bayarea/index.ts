@@ -45,8 +45,8 @@ export default defineCity({
     "Hybrid Schedule Strategist", "Burrito Before Standup", "Golden Gate Cyclist", "Carpool Lane Opportunist", "Robotaxi Early Adopter", "Sourdough Starter Parent",
   ],
   real: {
-    lat0: 37.6061, lng0: -122.1999, pxPerKm: 13.1,
-    labels: { fidi: R, soma: R, mountainview: R, paloalto: R, menlopark: R, cupertino: R, sunnyvale: R, sanjose: R, oakland: R, berkeley: R, mission: R, sunset: R, fremont: R, sanmateo: R, walnutcreek: R },
+    lat0: 37.615, lng0: -122.2, pxPerKm: 10.2,
+    labels: { fidi: R, soma: L, mountainview: R, paloalto: R, menlopark: L, cupertino: L, sunnyvale: R, sanjose: R, oakland: R, berkeley: L, mission: R, sunset: L, fremont: R, sanmateo: R, walnutcreek: R },
     ringLabel: "US 101, I-280, I-880, the bridges",
     boundaryLabel: "",
   },
