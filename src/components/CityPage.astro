@@ -163,28 +163,41 @@ const og = city === DEFAULT_CITY ? "/og.png" : `/og/${city}.png`;
   <div class="card-head"><h2 id="addTitle">Add yourself</h2><button class="x close" id="closeAdd" type="button" aria-label="Close">×</button></div>
   <div class="gate" id="gateStep" hidden>
     <p class="gate-msg" id="gateMsg"></p>
-    <ul class="gate-cities" aria-hidden="true">
-      {CITY_IDS.filter(id => id !== city).map(id => <li><img src={href(`/city/${id}.svg`)} alt="" width="40" height="40" /><span>{CITIES[id].name}</span></li>)}
-    </ul>
+    <p class="gate-pick" id="gatePickLabel">Your city</p>
+    <div class="gate-cities" role="radiogroup" aria-labelledby="gatePickLabel">
+      {CITY_IDS.map(id => (
+        <button type="button" role="radio" aria-checked={id === city ? "true" : "false"} tabindex={id === city ? 0 : -1} data-city={id}>
+          <img src={href(`/city/${id}.svg`)} alt="" width="40" height="40" /><span>{CITIES[id].name}</span>
+        </button>
+      ))}
+    </div>
     <div class="gate-actions">
-      <button class="cta" id="gateGo" type="button">Add my commute</button>
+      <button class="cta" id="gateGo" type="button">Add my commute in <span id="gateGoCity">{C.name}</span></button>
       <button class="pill" id="gateLater" type="button">Not now</button>
       <a class="pill" id="gateBack" href="/" hidden>Back</a>
     </div>
     <p class="gate-note">Takes about 20 seconds. It stays in your browser unless you choose to share it.</p>
   </div>
-  <form class="form" id="form">
+  <form class="form" id="form" novalidate>
     <div class="field"><label for="fName">Your name (optional)</label><input id="fName" placeholder="Leave blank for a random one" autocomplete="off" maxlength="40" enterkeyhint="done" /></div>
     <div class="pair">
       <div class="field"><label for="fHome">Lives in</label><select id="fHome"></select></div>
       <div class="field"><label for="fOffice">Works in</label><select id="fOffice"></select></div>
     </div>
-    <div class="pair">
-      <div class="field"><label for="fOut">Leaves home</label><input type="time" id="fOut" value="09:00" /></div>
-      <div class="field"><label for="fBack">Leaves work</label><input type="time" id="fBack" value="18:30" /></div>
+    <div class="field times">
+      <div class="times-head">
+        <label for="fOut"><i class="mk home" aria-hidden="true"></i>Leaves home <b id="outLbl">09:00</b></label>
+        <label for="fBack"><i class="mk work" aria-hidden="true"></i>Leaves work <b id="backLbl">18:30</b></label>
+      </div>
+      <div class="dual" id="dual">
+        <div class="dual-track" id="dualTrack" aria-hidden="true"></div>
+        <input type="range" class="home" id="fOut" min="0" max="1425" step="15" value="540" aria-valuetext="09:00" />
+        <input type="range" class="work" id="fBack" min="0" max="1425" step="15" value="1110" aria-valuetext="18:30" />
+      </div>
+      <div class="dual-hours" aria-hidden="true"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
     </div>
     <div class="pair">
-      <div class="field"><label for="fMode">Gets there by</label><select id="fMode" required><option value="" disabled selected>Pick one</option>{MODE_IDS.map(m => <option value={m}>{MODES[m]}</option>)}</select></div>
+      <div class="field"><label for="fMode">Gets there by</label><select id="fMode"><option value="" disabled selected>Pick one</option>{MODE_IDS.map(m => <option value={m}>{MODES[m]}</option>)}</select><p class="field-err" id="modeErr" hidden>Pick how you get there</p></div>
       <div class="field"><label for="fMins">One way (minutes)</label><input type="number" id="fMins" value="45" min="5" max="180" inputmode="numeric" /></div>
     </div>
     <div id="fShareRow">
