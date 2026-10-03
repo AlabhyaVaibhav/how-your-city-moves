@@ -1,15 +1,22 @@
 /*
- * Builds the to-scale map's line art and the road-distance table from OpenStreetMap, once:
- *   src/app/basemap.json: SVG path data (city boundary, main roads, ORR, NICE Road, metro, lakes)
- *   src/app/roadKm.json:  driving km between every pair of areas (OSRM)
- * Run with `npm run basemap` after adding an area or to refresh the map. Output is committed, so the
+ * Builds a city's to-scale map line art and road-distance table from OpenStreetMap, once:
+ *   src/cities/<city>/basemap.json: SVG path data (city boundary, main roads, ring roads, metro, lakes)
+ *   src/cities/<city>/roadKm.json:  driving km between every pair of areas (OSRM)
+ * Run with `npm run basemap -- <city>` after adding a city or an area, or to refresh the map. Output is committed, so the
  * site itself never calls a map service. Data © OpenStreetMap contributors, ODbL.
  */
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { AREA_IDS, NODES } from "../src/app/data";
-import { VIEW_REAL, geo, ungeo } from "../src/app/geo";
 import type { Pt } from "../src/app/iso";
+import { isCityId } from "../src/cities";
+
+// pick the city before loading anything that reads it
+const cityId = process.argv[2];
+if (!isCityId(cityId)) throw new Error("usage: npm run basemap -- <city id from src/cities/index.ts>");
+process.env.HYCM_CITY = cityId;
+const { AREA_IDS, NODES } = await import("../src/app/data");
+const { VIEW_REAL, geo, ungeo } = await import("../src/app/geo");
+const { CITY } = await import("../src/app/city");
 
 const UA = "how-your-city-moves basemap build (https://github.com/AlabhyaVaibhav/how-your-city-moves)";
 const OVERPASS = [
@@ -17,8 +24,7 @@ const OVERPASS = [
   "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
   "https://overpass.kumi.systems/api/interpreter",
 ];
-const CITY_RELATION = 7902476; // "Bengaluru", admin_level 7
-const out = (f: string) => join(import.meta.dirname, "../src/app", f);
+const out = (f: string) => join(import.meta.dirname, "../src/cities", cityId, f);
 
 /* ---------- fetch ---------- */
 interface Way { type: "way"; tags?: Record<string, string>; geometry?: { lat: number; lon: number }[] }
@@ -42,14 +48,15 @@ const [s, w] = ungeo(VIEW_REAL.x - 60, VIEW_REAL.y + VIEW_REAL.h + 60), [n, e] =
 const bbox = `${s.toFixed(4)},${w.toFixed(4)},${n.toFixed(4)},${e.toFixed(4)}`;
 
 // many lakes here carry no water=* tag, so take all water except these; the size filter drops small ones
-const NOT_LAKE = "^(drain|canal|wastewater|river|stream|ditch|pond|basin|fountain|pool|moat)$";
+const NOT_LAKE = `^(drain|canal|wastewater|${CITY.osm.rivers ? "" : "river|"}stream|ditch|pond|basin|fountain|pool|moat)$`;
 const q = `[out:json][timeout:180];
 (
-  rel(${CITY_RELATION});
+  rel(${CITY.osm.relation});
   way["highway"~"^(motorway|trunk|primary)$"](${bbox});
-  way["railway"="subway"](${bbox});
+  way["railway"~"^(subway|light_rail${CITY.osm.rail ? "|rail" : ""})$"]["service"!~"."](${bbox});
   way["natural"="water"]["water"!~"${NOT_LAKE}"](${bbox});
-  rel["natural"="water"]["water"!~"${NOT_LAKE}"](${bbox});
+  rel["natural"="water"]["water"!~"${NOT_LAKE}"](${bbox});${CITY.osm.coast ? `
+  way["natural"="coastline"](${bbox});` : ""}
 );
 out geom;`;
 
@@ -96,7 +103,8 @@ const area = (geom: { lat: number; lon: number }[]) => {
 
 /* ---------- build ---------- */
 const els = await overpass(q);
-const layers = { boundary: "", roads: "", orr: "", nice: "", metro: "", lakes: "" };
+const layers: Record<string, string> = { boundary: "", roads: "", ring: "", metro: "", lakes: "" };
+if (CITY.osm.coast) layers.coast = "";
 for (const el of els) {
   const t = el.tags ?? {};
   if (el.type === "relation" && t.boundary === "administrative") {
@@ -104,11 +112,12 @@ for (const el of els) {
   } else if (el.type === "way" && t.highway) {
     const name = (t["name:en"] ?? t.name ?? "") + " " + (t.ref ?? "");
     const d = line(el.geometry);
-    if (/outer ring road/i.test(name)) layers.orr += d;
-    else if (/\bNICE\b|nandi infrastructure/i.test(name)) layers.nice += d;
+    if (CITY.osm.ring.test(name)) layers.ring += d;
     else layers.roads += d;
-  } else if (el.type === "way" && t.railway === "subway") {
+  } else if (el.type === "way" && t.railway) {
     layers.metro += line(el.geometry, 1.5);
+  } else if (el.type === "way" && t.natural === "coastline") {
+    layers.coast += line(el.geometry, 1.2);
   } else if (t.natural === "water") {
     // a lake is either one closed way or a relation whose outer ring is split across several ways
     if (el.type === "way") { if (el.geometry && el.geometry.length > 3 && area(el.geometry) > 60) layers.lakes += line(el.geometry, .8) + "Z"; }
@@ -120,7 +129,7 @@ for (const el of els) {
 }
 writeFileSync(out("basemap.json"), JSON.stringify(layers) + "\n");
 const kb = (Buffer.byteLength(JSON.stringify(layers)) / 1024).toFixed(0);
-console.log(`wrote src/app/basemap.json (${kb} KB): ` + Object.entries(layers).map(([k, v]) => `${k} ${(v.length / 1024).toFixed(0)}K`).join(", "));
+console.log(`wrote src/cities/${cityId}/basemap.json (${kb} KB): ` + Object.entries(layers).map(([k, v]) => `${k} ${(v.length / 1024).toFixed(0)}K`).join(", "));
 
 /* ---------- road distances ---------- */
 const coords = AREA_IDS.map(id => `${NODES[id].ll[1]},${NODES[id].ll[0]}`).join(";");
@@ -133,4 +142,4 @@ AREA_IDS.forEach((a, i) => {
   AREA_IDS.forEach((b, j) => { const m = table.distances[i]![j]; if (i !== j && m != null) road[a]![b] = Math.round(m / 100) / 10; });
 });
 writeFileSync(out("roadKm.json"), JSON.stringify(road, null, 1) + "\n");
-console.log(`wrote src/app/roadKm.json (${AREA_IDS.length} areas)`);
+console.log(`wrote src/cities/${cityId}/roadKm.json (${AREA_IDS.length} areas)`);

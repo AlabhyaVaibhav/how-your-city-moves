@@ -4,6 +4,7 @@
  * Keep docs/analytics.md in sync when you change this file.
  */
 import type { AreaId, ModeId } from "../../app/data";
+import type { CityId } from "../../cities";
 import type { CommuteBucket, SpeedBucket } from "../../app/sim";
 
 export type ShareMethod = "native" | "copy" | "whatsapp" | "x" | "linkedin";
@@ -23,6 +24,10 @@ export interface EventMap {
   names_toggled: { visible: boolean };
   district_hovered: { area: AreaId };
   map_view_changed: { view: "iso" | "real" };
+  city_switched: { city: CityId };
+  /** The commute card dialog opened: right after adding someone, or from a row in the list. */
+  card_opened: { source: "added" | "list" };
+  card_shared: { method: "native" | "download" | "x" | "linkedin" | "whatsapp" | "copy" };
   data_cleared: None;
   /** Intent only: UPI payments happen in the payer's app, so completion can't be seen. */
   chip_in_clicked: { amount: number; method: "upi_app" | "copy_id" };

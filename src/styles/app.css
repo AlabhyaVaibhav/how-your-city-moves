@@ -3,6 +3,39 @@
 .head h1{ margin:0; font-weight:600; font-size:clamp(28px,4vw,44px); letter-spacing:-.025em; line-height:1.05; color:var(--head-ink); }
 .head p{ margin:10px 0 0; max-width:52ch; color:var(--head-ink-2); font-size:15px; line-height:1.5; }
 @media (max-width:640px){ .head{ margin-bottom:18px; } .head p{ font-size:14px; } }
+/* city picker: a pill showing the current city, opening a panel of city tiles (real links) */
+.city-pick{ position:relative; }
+.city-btn{ list-style:none; display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none;
+  padding:6px 14px 6px 6px; border:1px solid color-mix(in srgb, var(--head-ink) 28%, transparent); border-radius:999px; color:var(--head-ink); }
+.city-btn::-webkit-details-marker{ display:none; }
+.city-btn img{ width:34px; height:34px; border-radius:50%; background:var(--card); padding:3px; }
+.city-now{ display:grid; line-height:1.15; }
+.city-now small{ font:500 10px/1.2 var(--mono); letter-spacing:.08em; text-transform:uppercase; color:var(--head-ink-2); }
+.city-now b{ font-weight:600; font-size:15px; }
+.city-btn .chev{ width:12px; height:12px; color:var(--head-ink-2); transition:transform .15s; }
+.city-pick[open] .city-btn .chev{ transform:rotate(180deg); }
+.city-btn:hover,.city-pick[open] .city-btn{ border-color:var(--orange); }
+.city-btn:focus-visible{ outline:2px solid var(--orange); outline-offset:2px; }
+.city-panel{ position:absolute; right:0; top:calc(100% + 10px); z-index:40; width:min(452px, calc(100vw - 32px));
+  background:var(--card); color:var(--ink); border-radius:var(--radius); padding:14px;
+  box-shadow:inset 0 0 0 1px var(--card-edge), 0 24px 60px rgba(0,0,0,.45); }
+.city-pick[open] .city-panel{ animation:pop .18s ease-out; }
+.city-panel-head{ margin:2px 4px 10px; font:500 10.5px/1 var(--mono); letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3t); }
+.city-panel ul{ list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; }
+.city-panel a{ display:grid; justify-items:center; gap:2px; padding:10px 6px 9px; border-radius:10px; text-decoration:none; color:var(--ink);
+  border:1px solid transparent; text-align:center; }
+.city-panel a img{ width:56px; height:56px; margin-bottom:4px; }
+.city-panel a b{ font-weight:500; font-size:13.5px; }
+.city-panel a small{ font:400 10.5px/1.2 var(--mono); color:var(--ink-3t); }
+.city-panel a:hover,.city-panel a:focus-visible{ background:color-mix(in srgb, var(--ink) 6%, transparent); border-color:var(--ink-4); outline:none; }
+.city-panel a[aria-current="page"]{ border-color:var(--orange); background:color-mix(in srgb, var(--orange) 10%, transparent); }
+.city-panel a[aria-current="page"] small{ color:var(--orange); }
+@media (max-width:640px){
+  .head .city-pick{ width:100%; }
+  .city-btn{ width:max-content; }
+  .city-panel{ left:0; right:auto; }
+}
+@media (prefers-reduced-motion: reduce){ .city-pick[open] .city-panel{ animation:none; } .city-btn .chev{ transition:none; } }
 
 .grid{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; }
 .map-card{ grid-column:1 / -1; }
@@ -215,3 +248,18 @@ dialog.sheet[open]{ animation:pop .22s ease-out; }
 .focus-route .flow:not(.hl){ stroke-opacity:.05 !important; }
 .focus-route .crowd circle:not(.hl){ fill-opacity:.12; stroke-opacity:.12; }
 .focus-route .cm,.focus-route .route{ opacity:.15; }
+
+/* ---------- commute card ---------- */
+dialog.card-sheet{ width:min(720px, calc(100vw - 32px)); }
+.card-lede{ margin:8px 0 14px; color:var(--ink-2); font-size:14px; line-height:1.5; }
+.card-img{ border-radius:10px; overflow:hidden; box-shadow:inset 0 0 0 1px var(--card-edge); aspect-ratio:1200/630; background:var(--card); }
+.card-img img{ display:block; width:100%; height:100%; }
+.card-img.loading{ animation:breathe 1.2s ease-in-out infinite alternate; }
+@keyframes breathe{ from{ opacity:.55; } }
+.card-actions{ display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }
+.card-note{ margin:12px 0 0; font-size:12px; color:var(--ink-3t); }
+.people .card-btn{ all:unset; cursor:pointer; color:var(--ink-3t); display:grid; place-items:center; min-width:32px; min-height:32px; margin:-6px 0; }
+.people .card-btn svg{ width:15px; height:15px; }
+.people .card-btn:hover,.people .card-btn:focus-visible{ color:var(--orange); }
+@media (pointer:coarse){ .people .card-btn{ min-width:44px; min-height:44px; margin:-10px 0; } }
+@media (prefers-reduced-motion: reduce){ .card-img.loading{ animation:none; } }

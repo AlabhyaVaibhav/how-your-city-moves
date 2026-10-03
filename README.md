@@ -1,17 +1,22 @@
-![How Bangalore moves: an isometric line-art map of Bengaluru with commuters moving between twenty neighbourhoods](docs/banner.png)
+![How your city moves: an isometric line-art map of Bengaluru with commuters moving between its neighbourhoods](docs/banner.png)
 
-# How Bangalore moves
+# How your city moves
 
-An interactive isometric map of how Bengaluru commutes. Add when people leave home, where they go and how
+An interactive isometric map of how a city commutes. Add when people leave home, where they go and how
 long the ride takes, and the city steps forward every half hour on a 24-hour loop.
+
+Nine cities, each on its own page: Bengaluru (`/`), Mumbai, Delhi, Hyderabad, Chennai, Pune, Kolkata, Jaipur
+and the Bay Area (`/mumbai`, `/delhi`, …).
 
 Live at **https://www.howyourcitymoves.fyi**
 
-- **The city, right now**: hand-drawn isometric landmarks for twenty areas. City-wide traffic flows along the
-  routes, and your own commuters are drawn on top in cream.
-- **Real map**: a switch on the map card shows the same areas on a to-scale map of Bengaluru, with distances.
-  The roads, lakes and road-distance table are built once from OpenStreetMap with `npm run basemap` and
+- **The city, right now**: isometric landmarks for each city's areas (Gateway of India, Charminar, Howrah
+  Bridge and friends). City-wide traffic flows along the routes, and your own commuters are drawn on top in cream.
+- **Real map**: a switch on the map card shows the same areas on a to-scale map of the city, with distances.
+  The roads, water and road-distance table are built once from OpenStreetMap with `npm run basemap -- <city>` and
   committed, so the site never calls a map service.
+- **Commute card**: after you add yourself, a shareable image of your commute (hours a year, your route on
+  the map, and what that adds up to), drawn in your browser.
 - **Rush hours**: people on the road in each hour.
 - **Where everyone is**: at home, on the road, at work, updating with the clock.
 - **In the city**: the busiest routes across the city (hover one to highlight it on the map), plus your own
@@ -31,7 +36,9 @@ npm run dev        # http://localhost:4321   (add ?debug=analytics to see analyt
 npm test           # unit tests
 npm run build      # type-check + static build into dist/
 npm run preview    # serve dist/ locally
-npm run assets     # re-render public/og.png and the favicons from the map code
+npm run assets     # re-render the link previews (public/og.png, public/og/<city>.png) and favicons
+npm run basemap -- <city>   # rebuild a city's to-scale map and road distances from OpenStreetMap
+npm run place -- <city>     # suggest isometric positions for a city's areas
 ```
 
 Needs Node 22.12+ (Astro 7). `npm run build` runs `astro check` first, so type errors fail the build.

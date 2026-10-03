@@ -5,7 +5,7 @@ import { SITE } from "../config";
 import { upiLink } from "../lib/upi";
 
 const { id, name, amounts } = SITE.upi;
-const note = "Chip in: How Bangalore moves";
+const note = "Chip in: How your city moves";
 const options = (id ? amounts : []).map(amount => {
   const link = upiLink({ id, name, amount, note });
   const qr = renderSVG(link, { border: 2, ecc: "M", whiteColor: "#ebe5d7", blackColor: "#1e1e20" })

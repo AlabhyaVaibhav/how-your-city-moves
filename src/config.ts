@@ -2,7 +2,7 @@
 const env = import.meta.env;
 
 export const SITE = {
-  name: "How Bangalore moves",
+  name: "How your city moves",
   description: "Tell it when people leave home, where they go, and how long the ride takes. The city steps forward every half hour, all day, on a loop.",
   // Absolute base for share links and OG tags. Override with PUBLIC_SITE_URL (e.g. for a custom domain).
   url: (env.PUBLIC_SITE_URL || "https://www.howyourcitymoves.fyi").replace(/\/$/, ""),

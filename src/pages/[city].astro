@@ -1,0 +1,10 @@
+---
+import CityPage from "../components/CityPage.astro";
+import { CITY_IDS, DEFAULT_CITY, type CityId } from "../cities";
+
+export function getStaticPaths() {
+  return CITY_IDS.filter(c => c !== DEFAULT_CITY).map(city => ({ params: { city } }));
+}
+const city = Astro.params.city as CityId;
+---
+<CityPage city={city} />

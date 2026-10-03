@@ -1,5 +1,5 @@
 -- How people get to work (#10). Optional: older clients and earlier rows have no mode.
--- Keep the mode list in step with MODES in src/app/data.ts.
+-- Keep the mode list in step with MODES in src/app/modes.ts.
 
 alter table public.commutes add column if not exists mode text;
 alter table public.commutes add constraint modes_known check (mode is null or mode in ('walk','cycle','bike','car','public'));

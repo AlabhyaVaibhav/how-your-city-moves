@@ -8,8 +8,9 @@
     "build": "astro check && astro build",
     "preview": "astro preview",
     "test": "vitest run",
-    "assets": "tsx scripts/build-assets.ts",
+    "assets": "tsx scripts/build-city-icons.ts && tsx scripts/build-assets.ts && for c in mumbai delhi hyderabad chennai pune kolkata jaipur bayarea; do HYCM_CITY=$c tsx scripts/build-assets.ts; done",
     "basemap": "tsx scripts/build-basemap.ts",
+    "place": "tsx scripts/place-areas.ts",
     "preview:map": "tsx scripts/preview-map.ts"
   },
   "dependencies": {
