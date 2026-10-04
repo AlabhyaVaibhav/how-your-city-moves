@@ -28,7 +28,14 @@ export const ANALYTICS = {
   },
   posthog: {
     key: env.PUBLIC_POSTHOG_KEY || "",
+    /** PostHog's own ingestion host (also used for links back to the PostHog app). */
     host: env.PUBLIC_POSTHOG_HOST || "https://eu.i.posthog.com",
+    /**
+     * Where the browser sends events: this site's /ingest path, which vercel.json forwards to PostHog, so
+     * ad blockers don't drop first-party analytics. PUBLIC_POSTHOG_PROXY=off sends straight to `host`.
+     * Dev has no rewrites, so it always goes straight there.
+     */
+    proxy: env.DEV || env.PUBLIC_POSTHOG_PROXY === "off" ? "" : (env.PUBLIC_POSTHOG_PROXY || "/ingest"),
   },
   /** Nothing leaves the browser in dev unless explicitly forced. */
   send: !env.DEV || env.PUBLIC_ANALYTICS_IN_DEV === "1",
