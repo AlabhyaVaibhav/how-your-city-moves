@@ -78,7 +78,7 @@ const page = document.querySelector<HTMLElement>(".grid")!;
 const sum = (o: Record<string, number>) => Object.values(o).reduce((a, b) => a + b, 0);
 
 function drawRush() {
-  const mine = onRoad(store.people, 24);
+  const mine = onRoad(store.people, 24, clock.weekday);
   if (city) rush.build(city.hours.map((n, h) => ({ n: n + mine[h]!.length, names: mine[h] })), "city");
   else rush.build(mine.map(names => ({ n: names.length, names })), "yours");
 }
@@ -221,13 +221,17 @@ rebuild();
 void refreshCity();
 
 /* ---------- loop ---------- */
-let last = performance.now();
+let last = performance.now(), shownWeekday = clock.weekday;
 function frame(now: number) {
-  if (clock.advance(now - last)) timebar.syncScrub();
+  if (clock.advance(now - last)) {
+    timebar.syncScrub();
+    // the rush-hours chart follows the day on show
+    if (clock.weekday !== shownWeekday) { shownWeekday = clock.weekday; drawRush(); }
+  }
   last = now;
   const people = store.people;
   const e = reduce ? (clock.prog > .5 ? 1 : 0) : ease(clock.prog);
-  const A = snapshot(people, clock.base), B = snapshot(people, clock.base + 30);
+  const A = snapshot(people, clock.base, clock.weekday), B = snapshot(people, clock.base + 30, clock.weekday);
   curSnap = e > .5 ? B : A;
   timebar.draw();
   rush.markHour(Math.floor(clock.minute / 60) % 24);

@@ -22,6 +22,40 @@ function intentUrl(method: "whatsapp" | "x" | "linkedin") {
   return "https://www.linkedin.com/sharing/share-offsite/?url=" + encodeURIComponent(url);
 }
 
+type Platform = "android" | "ios" | "other";
+export function platform(ua = navigator.userAgent, touch = navigator.maxTouchPoints): Platform {
+  if (/Android/i.test(ua)) return "android";
+  // iPadOS reports itself as a Mac, but has touch
+  if (/iPhone|iPad|iPod/i.test(ua) || (/Macintosh/i.test(ua) && touch > 1)) return "ios";
+  return "other";
+}
+
+/** Android intent URLs open the app, and fall back to the web page by themselves if it isn't installed. */
+export function androidIntent(method: "whatsapp" | "x", text: string, web: string) {
+  const [path, scheme, pkg] = method === "x"
+    ? [`post?message=${encodeURIComponent(text)}`, "twitter", "com.twitter.android"]
+    : [`send?text=${encodeURIComponent(text)}`, "whatsapp", "com.whatsapp"];
+  return `intent://${path}#Intent;scheme=${scheme};package=${pkg};S.browser_fallback_url=${encodeURIComponent(web)};end`;
+}
+
+/**
+ * On phones, share in the app rather than on its website (where people often aren't signed in).
+ * Android: X and WhatsApp open their apps directly. iPhone: WhatsApp's own link opens its app in the same
+ * tab; X and LinkedIn go through the share sheet, which lists the installed apps (iOS shows an error for
+ * a direct app link when the app isn't there). LinkedIn has no direct compose link, so it always uses the
+ * share sheet. Returns false on desktop, where the web link is right.
+ */
+export async function shareInApp(method: "whatsapp" | "x" | "linkedin", text: string, url: string, web: string, files?: File[]): Promise<boolean> {
+  const p = platform();
+  if (p === "other") return false;
+  if (p === "android" && method !== "linkedin") { location.href = androidIntent(method, `${text} ${url}`, web); return true; }
+  if (p === "ios" && method === "whatsapp") { location.href = web; return true; }
+  const data: ShareData = files?.length && navigator.canShare?.({ files }) ? { files, text: `${text} ${url}` } : { title: document.title, text, url };
+  if (typeof navigator.share !== "function") { location.href = web; return true; }
+  try { await navigator.share(data); } catch (err) { if ((err as DOMException)?.name !== "AbortError") location.href = web; }
+  return true;
+}
+
 const useNative = () => typeof navigator.share === "function" && matchMedia("(pointer: coarse)").matches;
 
 async function copy(text: string) {
@@ -77,9 +111,12 @@ function initPopover() {
       status.textContent = "Couldn't copy. Long-press the address bar instead.";
     }
   });
-  p.querySelectorAll<HTMLAnchorElement>("a[data-method]").forEach(a => a.addEventListener("click", () => {
-    track("share_completed", { method: a.dataset.method as ShareMethod });
+  p.querySelectorAll<HTMLAnchorElement>("a[data-method]").forEach(a => a.addEventListener("click", e => {
+    const m = a.dataset.method as "whatsapp" | "x" | "linkedin";
+    track("share_completed", { method: m });
     closePopover(false);
+    // phones: open the app instead of the website (the link stays as the desktop path)
+    if (platform() !== "other") { e.preventDefault(); void shareInApp(m, text(), shareUrl(m), a.href); }
   }));
   document.addEventListener("keydown", e => { if (e.key === "Escape") closePopover(); });
   document.addEventListener("pointerdown", e => {

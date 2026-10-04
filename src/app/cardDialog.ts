@@ -5,6 +5,7 @@ import { cardText, renderCard } from "./card";
 import { cardStats } from "./cardStats";
 import { track } from "../lib/analytics";
 import { SITE } from "../config";
+import { platform, shareInApp } from "../lib/share";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 type Method = "native" | "download" | "x" | "linkedin" | "whatsapp" | "copy";
@@ -64,8 +65,15 @@ export function initCardDialog() {
       track("card_shared", { method: "copy" }); status("Copied");
     } catch { status("Couldn't copy"); }
   });
-  dlg.querySelectorAll<HTMLAnchorElement>("a[data-card]").forEach(a => a.addEventListener("click", () => {
-    track("card_shared", { method: a.dataset.card as Method });
+  dlg.querySelectorAll<HTMLAnchorElement>("a[data-card]").forEach(a => a.addEventListener("click", e => {
+    const m = a.dataset.card as "x" | "linkedin" | "whatsapp";
+    track("card_shared", { method: m });
+    // phones: share in the app, with the card attached where the share sheet allows it
+    if (platform() !== "other" && current) {
+      e.preventDefault();
+      const files = current.blob ? [new File([current.blob], fileName(current.person), { type: "image/png" })] : undefined;
+      void shareInApp(m, cardText(current.person), pageUrl(m), a.href, files);
+    }
   }));
 
   return async function openCard(person: Person, source: "added" | "list") {

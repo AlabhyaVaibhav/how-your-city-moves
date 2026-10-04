@@ -1,5 +1,6 @@
 /* Status + snapshot logic and the 30-minute stepped clock. Pure, no DOM. */
 import { NODES, type AreaId, type Person } from "./data";
+import { travelsOn } from "./days";
 
 export type Status = "home" | "transit" | "office";
 
@@ -11,9 +12,15 @@ export const ease = (t: number) => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t 
 export const hourName = (h: number) => (h % 12 || 12) + (h < 12 ? " am" : " pm");
 export function rng(n: number) { let s = n * 9301 + 49297; return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; }; }
 
-export function statusAt(p: Person, t: number): { s: Status; f?: number; dir?: 1 | -1 } {
+/**
+ * Where someone is at minute `t` of a day. With a `weekday` (0 = Monday), people who said which days they
+ * travel stay home on the others; a trip belongs to the day it set out (a night shift's way home is
+ * yesterday's trip).
+ */
+export function statusAt(p: Person, t: number, weekday?: number): { s: Status; f?: number; dir?: 1 | -1 } {
   t = ((t % 1440) + 1440) % 1440;
   const L = p.out, c = Math.max(5, p.mins);
+  if (weekday !== undefined && !travelsOn(p.days, t < L ? weekday - 1 : weekday)) return { s: "home" };
   let W = p.back; if (W < L + c) W += 1440; if (W < L + c) W = L + c;
   let u = t; if (u < L) u += 1440;
   if (u < L + c) return { s: "transit", f: (u - L) / c, dir: 1 };
@@ -33,10 +40,12 @@ export interface Placement {
 }
 export type Snapshot = Record<string, Placement>;
 
-export function snapshot(people: readonly Person[], t: number): Snapshot {
+/** Everyone's placement at minute `t`. `t` may run past midnight into the next weekday (the clock's next step). */
+export function snapshot(people: readonly Person[], t: number, weekday?: number): Snapshot {
   const out: Snapshot = {}, groups: Partial<Record<AreaId, string[]>> = {};
+  const day = weekday === undefined ? undefined : weekday + Math.floor(t / 1440);
   for (const p of people) {
-    const st = statusAt(p, t);
+    const st = statusAt(p, t, day);
     if (st.s === "transit") {
       const a = NODES[p.home].g, b = NODES[p.office].g;
       const f = st.dir === 1 ? st.f! : 1 - st.f!;
@@ -62,10 +71,11 @@ export function snapshot(people: readonly Person[], t: number): Snapshot {
 /** True if [s,e) overlaps [hs,he) on a 24h loop. */
 export const over = (s: number, e: number, hs: number, he: number) => [-1440, 0, 1440].some(o => s + o < he && e + o > hs);
 
-/** Names of people on the road in each of `n` equal buckets of the day. */
-export function onRoad(people: readonly Person[], n: number): string[][] {
+/** Names of people on the road in each of `n` equal buckets of the day (only those travelling on `weekday`, if given). */
+export function onRoad(people: readonly Person[], n: number, weekday?: number): string[][] {
   const size = 1440 / n, out = Array.from({ length: n }, () => [] as string[]);
   for (const p of people) {
+    if (weekday !== undefined && !travelsOn(p.days, weekday)) continue;
     const c = Math.max(5, p.mins); let W = p.back; if (W < p.out + c) W += 1440;
     for (let i = 0; i < n; i++) {
       const a = i * size, b = a + size;
@@ -109,6 +119,9 @@ export class Clock {
   }
 
   seek(minute: number) { this.base = Math.floor(minute / 30) * 30; this.prog = 0; }
+
+  /** Day of the week on show: day 1 is a Monday, and the week loops. */
+  get weekday() { return (this.day - 1) % 7; }
 
   get minute() { return this.base + 30 * this.prog; }
 }
