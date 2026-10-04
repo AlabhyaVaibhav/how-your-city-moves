@@ -10,6 +10,8 @@ import "../styles/base.css";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import SharePopover from "../components/SharePopover.astro";
+import Analytics from "@vercel/analytics/astro";
+import SpeedInsights from "@vercel/speed-insights/astro";
 import { SITE } from "../config";
 import { href } from "../lib/paths";
 
@@ -92,5 +94,8 @@ const ld = { "@context": "https://schema.org", "@graph": [
   <script>
     import "../lib/site";
   </script>
+<!-- Vercel Web Analytics (page views) and Speed Insights (Core Web Vitals): cookieless, served from this site -->
+<Analytics />
+<SpeedInsights />
 </body>
 </html>

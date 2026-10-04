@@ -64,6 +64,8 @@ allowed. Rebuild after changing them.
 
 ### Analytics
 
+Vercel Web Analytics (page views) and Speed Insights (Core Web Vitals) run on every page from `src/layouts/Base.astro`. Both are cookieless and are served from the site's own domain (`/_vercel/…`), so the CSP needs no extra hosts. Turn them on in the Vercel project's Analytics and Speed Insights tabs; until then the scripts 404 harmlessly. They're separate from the product events below.
+
 All tracking goes through `track()` in `src/lib/analytics`. Swapping providers needs no changes to app code.
 
 - **PostHog** (in use): cookieless, in-memory only, no autocapture, no session recording, no person profiles.
