@@ -8,7 +8,8 @@ const origin = (/** @type {string | undefined} */ u) => { try { return u ? new U
 // Only the third parties actually configured get into the CSP.
 const provider = env.PUBLIC_ANALYTICS_PROVIDER;
 const plausible = provider === "plausible" ? origin(env.PUBLIC_PLAUSIBLE_SRC || "https://plausible.io/js/script.manual.js") : "";
-const posthog = provider === "posthog" ? origin(env.PUBLIC_POSTHOG_HOST || "https://eu.i.posthog.com") : "";
+// PostHog goes through this site's /ingest proxy ('self'), unless the proxy is turned off
+const posthog = provider === "posthog" && env.PUBLIC_POSTHOG_PROXY === "off" ? origin(env.PUBLIC_POSTHOG_HOST || "https://eu.i.posthog.com") : "";
 const supabase = origin(env.PUBLIC_SUPABASE_URL);
 const connect = ["'self'", plausible, posthog, supabase].filter(Boolean).join(" ");
 

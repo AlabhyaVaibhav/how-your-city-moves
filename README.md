@@ -64,11 +64,11 @@ allowed. Rebuild after changing them.
 
 ### Analytics
 
-Vercel Web Analytics (page views) and Speed Insights (Core Web Vitals) run on every page from `src/layouts/Base.astro`. Both are cookieless and are served from the site's own domain (`/_vercel/…`), so the CSP needs no extra hosts. Turn them on in the Vercel project's Analytics and Speed Insights tabs; until then the scripts 404 harmlessly. They're separate from the product events below.
+Vercel Web Analytics (page views) and Speed Insights (Core Web Vitals) run on every page from `src/layouts/Base.astro`. Both are cookieless and are served from the site's own domain (at paths Vercel randomises per project), so the CSP needs no extra hosts. Turn them on in the Vercel project's Analytics and Speed Insights tabs; until then the scripts 404 harmlessly. They're separate from the product events below.
 
 All tracking goes through `track()` in `src/lib/analytics`. Swapping providers needs no changes to app code.
 
-- **PostHog** (in use): cookieless, in-memory only, no autocapture, no session recording, no person profiles.
+- **PostHog** (in use): cookieless, in-memory only, no autocapture, no session recording, no person profiles. Sends `$pageleave` and Core Web Vitals (the web-vitals extension is bundled, so PostHog loads no outside code). Events go through `/ingest`, which `vercel.json` rewrites to PostHog's US hosts so ad blockers don't drop them; set `PUBLIC_POSTHOG_PROXY=off` to send directly (and change the rewrites if your project is in the EU).
   Keep "Discard client IP data" on in the PostHog project settings, because the privacy page promises it.
 - **Plausible**: set the provider, domain and `script.manual.js` URL.
 - **None**: `track()` only logs to the console. In `npm run dev` nothing is sent unless `PUBLIC_ANALYTICS_IN_DEV=1`.

@@ -22,7 +22,7 @@ function getAdapter(): Promise<Adapter | null> {
   return adapter ??= (async () => {
     const p = activeProvider();
     if (p === "plausible") return (await import("./plausible")).plausibleAdapter(ANALYTICS.plausible.domain, ANALYTICS.plausible.src);
-    if (p === "posthog") return (await import("./posthog")).posthogAdapter(ANALYTICS.posthog.key, ANALYTICS.posthog.host);
+    if (p === "posthog") return (await import("./posthog")).posthogAdapter(ANALYTICS.posthog.key, ANALYTICS.posthog.host, ANALYTICS.posthog.proxy);
     return null;
   })();
 }
