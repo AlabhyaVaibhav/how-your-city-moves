@@ -58,3 +58,39 @@ describe("Clock", () => {
     expect(c.prog).toBeCloseTo(.1);
   });
 });
+
+describe("days of the week", () => {
+  const weekdaysOnly: Person = { ...anita, days: 0b0011111 }; // Mon–Fri
+  it("keeps people home on days they don't travel", () => {
+    expect(statusAt(weekdaysOnly, 700, 0).s).toBe("office"); // Monday
+    expect(statusAt(weekdaysOnly, 700, 5).s).toBe("home"); // Saturday
+    expect(statusAt(anita, 700, 5).s).toBe("office"); // no days given: every day
+  });
+
+  it("gives a night shift's way home to the day it set out", () => {
+    const fridayNights: Person = { ...anita, out: 1320, back: 360, mins: 30, days: 0b0010000 }; // Fri 22:00 → Sat 06:00
+    expect(statusAt(fridayNights, 1335, 4).s).toBe("transit"); // Friday night, setting out
+    expect(statusAt(fridayNights, 120, 5).s).toBe("office"); // early Saturday, still Friday's shift
+    expect(statusAt(fridayNights, 1335, 5).s).toBe("home"); // Saturday night: not a travel day
+  });
+
+  it("rolls the next step past midnight into the next day", () => {
+    const people = [{ ...weekdaysOnly, out: 0, back: 600 }]; // leaves at 00:00, weekdays only
+    expect(snapshot(people, 1440, 4)[anita.id]!.s).toBe("home"); // Friday 23:30 + 30 = Saturday 00:00
+    expect(snapshot(people, 1440, 3)[anita.id]!.s).toBe("transit"); // Thursday → Friday 00:00
+  });
+
+  it("only counts travellers in the rush hours for that day", () => {
+    const people = [weekdaysOnly, { ...anita, id: "b" }];
+    expect(onRoad(people, 24, 0).flat().length).toBeGreaterThan(onRoad(people, 24, 6).flat().length);
+  });
+
+  it("names day 1 Monday and loops the week", () => {
+    const c = new Clock(false);
+    expect(c.weekday).toBe(0);
+    c.day = 8;
+    expect(c.weekday).toBe(0);
+    c.day = 7;
+    expect(c.weekday).toBe(6);
+  });
+});

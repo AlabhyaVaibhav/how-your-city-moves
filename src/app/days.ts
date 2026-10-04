@@ -4,6 +4,10 @@
  */
 
 export const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
+export const DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] as const;
+
+/** Does someone with these days travel on this weekday (0 = Monday)? No days given means every day. */
+export const travelsOn = (days: number | undefined, weekday: number) => !days || !!(days & (1 << (((weekday % 7) + 7) % 7)));
 export const WEEKDAYS = 0b0011111, WEEKEND = 0b1100000, EVERY_DAY = 0b1111111;
 
 export const isDays = (v: unknown): v is number => Number.isInteger(v) && (v as number) >= 1 && (v as number) <= EVERY_DAY;

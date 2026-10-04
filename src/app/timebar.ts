@@ -1,6 +1,7 @@
-/* Sticky time bar: clock, day counter, density strip, scrubber, play/pause, speed. */
+/* Sticky time bar: clock, day of the week, density strip, scrubber, play/pause, speed. */
 import { hhmm, onRoad, pad, type Clock } from "./sim";
 import type { Person } from "./data";
+import { DAY_NAMES } from "./days";
 import { bindTip, esc } from "./tooltip";
 
 const ICON_PAUSE = '<svg viewBox="0 0 14 14" aria-hidden="true"><rect x="2" y="1" width="3.5" height="12" fill="currentColor"/><rect x="8.5" y="1" width="3.5" height="12" fill="currentColor"/></svg>';
@@ -29,6 +30,7 @@ export class Timebar {
   private densEls: HTMLElement[] = [];
   private lastSlot = -1;
   private lastDay = -1;
+  private people: readonly Person[] = [];
 
   constructor(private clock: Clock, hooks: TimebarHooks = {}) {
     const hrs = $("hours");
@@ -73,7 +75,8 @@ export class Timebar {
   }
 
   setPeople(people: readonly Person[]) {
-    this.slots = onRoad(people, 48);
+    this.people = people;
+    this.slots = onRoad(people, 48, this.clock.weekday);
     this.redraw();
   }
 
@@ -101,7 +104,13 @@ export class Timebar {
   draw() {
     const minute = this.clock.minute;
     const ct = hhmm(minute); if (this.clockEl.textContent !== ct) this.clockEl.textContent = ct;
-    if (this.clock.day !== this.lastDay) { this.dayEl.textContent = "day " + this.clock.day; this.lastDay = this.clock.day; }
+    if (this.clock.day !== this.lastDay) {
+      // a new day: name it, and redraw the strip for who travels today
+      const first = this.lastDay === -1;
+      this.dayEl.textContent = DAY_NAMES[this.clock.weekday]!;
+      this.lastDay = this.clock.day;
+      if (!first) this.setPeople(this.people);
+    }
     this.nowEl.style.left = (minute / 1440 * 100) + "%";
     const sl = Math.floor(minute / 30) % 48;
     if (sl !== this.lastSlot) { this.densEls.forEach((d, i) => d.classList.toggle("on", i === sl)); this.lastSlot = sl; }
